@@ -17,11 +17,13 @@ npm start
 
 浏览器打开 [http://127.0.0.1:8010](http://127.0.0.1:8010)。必须使用 `127.0.0.1`，不能改成 `localhost`。端口冲突时设置 `$env:MATHBANK_PORT='8011'`，再启动。
 
-1. 设置 → **Continue with ChatGPT**。
+1. **先用 Edge 或 Chrome 打开本机题库地址**，在设置点 **Continue with ChatGPT**。官方流程使用系统浏览器；不以 Codex 内嵌预览作为登录验证环境。
 2. 在 OpenAI 官方页面登录并允许使用 ChatGPT 计划，授权后回到设置。
 3. **刷新模型**，选择当前账户可用模型。
 4. **测试连接**。此操作会消耗 ChatGPT 用量；收到完整 `response.completed` 后才记录成功。
 5. “断开连接”删除本机凭据。到 ChatGPT 用量管理中撤销远端访问。
+
+若官方账户选择页显示 `400 Invalid content type: text/html`：说明该页未得到预期格式的响应，不能据此判断订阅权限。不要只复制已有授权 URL 到另一浏览器，因为回调与发起浏览器绑定；应在 Edge/Chrome 从题库设置重新发起。若系统浏览器也失败，继续检查网络/浏览器会话；根因尚未确认。本应用无法直接修复 OpenAI 域名内的页面。
 
 网络代理可通过 `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY` 设置；启动命令启用 Node 环境代理。不要把代理凭据提交到仓库。服务仅监听本机，不能用于 iPad 局域网访问。
 

@@ -36,6 +36,8 @@ async function request(path, data) {
 function render() {
   const hosted = state.mode === 'hosted', ready = !hosted && state.connected && state.planEnabled;
   $('hosted-notice').hidden = !hosted;
+  $('local-browser-notice').hidden = hosted;
+  $('local-address').textContent = `${location.origin}/#settings`;
   $('connection-status').textContent = hosted ? '等待云端接入' : !state.connected ? '未连接' : !state.planEnabled ? '未授权用量' : state.verifiedAt ? '调用已验证' : '已授权 · 待验证';
   $('connection-status').classList.toggle('success', ready);
   $('connection-description').textContent = hosted ? '请先完成本机订阅验证，并申请远程托管接入。' : !state.connected ? '在官方页面登录，并授权使用你的 ChatGPT 计划。' : !state.planEnabled ? '身份已确认，但没有订阅使用权限。请重新注册并授权计划使用。' : state.verifiedAt ? '已完成一次真实模型调用。可以继续推进一道题的完整流程。' : '订阅使用权限已确认。选择模型并测试一次真实调用。';
@@ -81,6 +83,11 @@ async function connect(newAccount) {
   });
 }
 $('connect').addEventListener('click', () => connect(false));
+$('copy-address').addEventListener('click', async () => {
+  try { await navigator.clipboard.writeText(`${location.origin}/#settings`); message('题库地址已复制。请粘贴到 Edge 或 Chrome，在那里重新发起授权。'); }
+  catch { message(`请复制这个地址到 Edge 或 Chrome：${location.origin}/#settings`); }
+});
+document.querySelector('.skip').addEventListener('click', event => {event.preventDefault(); $('main').focus(); $('main').scrollIntoView();});
 $('new-account').addEventListener('click', () => connect(true));
 $('refresh-models').addEventListener('click', () => act(async () => {
   const data = await request('/api/models'); state.models = data.models;
