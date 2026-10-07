@@ -137,5 +137,5 @@ if (process.argv[1] && resolve(process.argv[1]) === fileURLToPath(import.meta.ur
   const {handler} = createApp({vault, origin});
   const server = http.createServer(handler);
   server.on('error', error => { console.error(`启动失败（${error.code ?? 'unknown'}），请更换 MATHBANK_PORT 后重试。`); process.exitCode = 1; });
-  server.listen(port, '127.0.0.1', () => console.log(`数学题库 V0.1：${origin}\n上传一道题，分析后人工审核。当前为本机服务，云端接入等待许可。`));
+  server.listen(port, '127.0.0.1', () => console.log(`数学题库 V0.1：${origin}\n上传题目照片，自动拆分多题并逐题审核。当前使用 Windows 本机题库，云端同步暂停。`));
 }

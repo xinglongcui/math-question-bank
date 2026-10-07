@@ -47,7 +47,7 @@ function metadata(value) {
   return {source, date};
 }
 export class QuestionStore {
-  constructor(directory, protector) {this.directory = directory; this.protector = protector;}
+  constructor(directory, protector) {this.directory = directory; this.protector = protector; this.parents = new Map();}
   path(id, extension = 'json') {
     if (typeof id !== 'string' || !/^[a-f0-9]{8}(?:-[a-f0-9]{4}){3}-[a-f0-9]{12}$/.test(id)) fail('题目标识无效。');
     return join(this.directory, `${id}.${extension}.dpapi`);
@@ -59,20 +59,36 @@ export class QuestionStore {
     await writeFile(temporary, await this.protector.protect(bytes), {mode:0o600});
     await rename(temporary, file);
   }
-  async get(id) {
-    try {return JSON.parse((await this.protector.unprotect(await readFile(this.path(id)))).toString());}
-    catch (error) {if (error.code === 'ENOENT') throw new AppError('题目不存在。', 'question_not_found', 'question', 404); throw error;}
+  async readDocument(id) {return JSON.parse((await this.protector.unprotect(await readFile(this.path(id)))).toString());}
+  async locate(id) {
+    this.path(id);
+    let fileId=this.parents.get(id) ?? id, document;
+    try {document=await this.readDocument(fileId);}
+    catch(error) {
+      if(error.code!=='ENOENT')throw error;
+      await this.list();fileId=this.parents.get(id) ?? id;
+      try {document=await this.readDocument(fileId);}
+      catch(retry) {if(retry.code==='ENOENT')throw new AppError('题目不存在。','question_not_found','question',404);throw retry;}
+    }
+    const record=document.kind==='photo_batch'?document.records.find(item=>item.id===id):document;
+    if(!record)throw new AppError('题目不存在。','question_not_found','question',404);
+    return {fileId,document,record};
   }
-  async image(id) {const record = await this.get(id); return {mime:record.mime, bytes:await this.protector.unprotect(await readFile(this.path(id, 'image')))};}
+  async get(id) {return (await this.locate(id)).record;}
+  async image(id) {const record = await this.get(id); return {mime:record.mime, bytes:await this.protector.unprotect(await readFile(this.path(record.photoId ?? id, 'image')))};}
   async list() {
     let files; try {files = await readdir(this.directory);} catch (error) {if (error.code === 'ENOENT') return []; throw error;}
     const records = [];
     for (const file of files.filter(file => file.endsWith('.json.dpapi'))) {
-      const record = await this.get(file.slice(0, -11));
+      const fileId=file.slice(0,-11), document=await this.readDocument(fileId);
+      for(const record of document.kind==='photo_batch'?document.records:[document]) {
+      if(record.photoId)this.parents.set(record.id,fileId);
       records.push({id:record.id, source:record.source, date:record.date, status:record.status, question:record.analysis?.question ?? '', createdAt:record.createdAt,
+        photoId:record.photoId,photoLabel:record.photoLabel,photoIndex:record.photoIndex,photoCount:record.photoCount,
         difficulty:record.analysis?.difficulty, knowledgePoints:record.analysis?.knowledgePoints ?? [], mathMethods:record.analysis?.mathMethods ?? []});
+      }
     }
-    return records.sort((a,b) => b.createdAt.localeCompare(a.createdAt));
+    return records.sort((a,b) => b.createdAt.localeCompare(a.createdAt) || (a.photoIndex ?? 0)-(b.photoIndex ?? 0));
   }
   async create(value) {
     if ((await this.list()).length >= 100) fail('本机试用最多保存 100 道题；正式题库将在 Supabase 阶段接入。');
@@ -83,19 +99,35 @@ export class QuestionStore {
     return record;
   }
   async update(id, revision, transform) {
-    const record = await this.get(id);
+    const {fileId,document,record} = await this.locate(id);
     if (record.revision !== revision) throw new AppError('题目已被更新，请重新打开后再操作。', 'question_conflict', 'question', 409);
     const next = await transform(record);
     next.revision = record.revision + 1; next.updatedAt = new Date().toISOString();
-    await this.write(id, next); return next;
+    await this.write(fileId,document.kind==='photo_batch'?{...document,records:document.records.map(item=>item.id===id?next:item)}:next); return next;
   }
   async analyze(id, revision, math, model) {
-    return this.update(id, revision, async record => {
-      const {bytes, mime} = await this.image(id);
-      const result = await math.analyzeQuestion({model, image:`data:${mime};base64,${bytes.toString('base64')}`});
-      return {...record, aiAnalysis:result.rawAnalysis ?? result.analysis, analysis:result.analysis, model:result.model,
-        analyzedAt:new Date().toISOString(), reviewedAt:null, status:result.analysis.needsClarification || result.analysis.uncertainties.length ? 'needs_clarification' : 'pending_review'};
-    });
+    const record=await this.get(id);
+    if(record.revision!==revision)throw new AppError('题目已被更新，请重新打开后再操作。','question_conflict','question',409);
+    const {bytes,mime}=await this.image(id);
+    const result=await math.analyzeQuestion({model,image:`data:${mime};base64,${bytes.toString('base64')}`,target:record.photoId?{index:record.photoIndex,label:record.photoLabel}:undefined});
+    const items=result.analyses ?? [{analysis:result.analysis,rawAnalysis:result.rawAnalysis ?? result.analysis}];
+    if(!items.length || items.length>20 || (record.photoId && items.length!==1))fail('AI 返回的题目数量不正确。');
+    // Validate every item before replacing the original record: no partial batches.
+    const checked=items.map(item=>({...item,analysis:validateAnalysis(item.analysis)}));
+    const analyzedAt=new Date().toISOString();
+    const analyzed=(base,item)=>({...base,aiAnalysis:item.rawAnalysis ?? item.analysis,analysis:item.analysis,model:result.model,analyzedAt,reviewedAt:null,
+      status:item.analysis.needsClarification || item.analysis.uncertainties.length?'needs_clarification':'pending_review'});
+    if(checked.length===1)return this.update(id,revision,async value=>analyzed(value,checked[0]));
+    if((await this.list()).length+checked.length-1>100)fail('拆分后将超过本机100道题的上限。原图与已有记录已保留。');
+    const latest=await this.get(id);
+    if(latest.revision!==revision)throw new AppError('题目已被更新，请重新打开后再操作。','question_conflict','question',409);
+    const records=checked.map((item,index)=>({...analyzed(record,item),id:index===0?id:randomUUID(),photoId:id,photoIndex:index+1,photoCount:checked.length,
+      photoLabel:item.label ?? `第${index+1}题`,revision:index===0?revision+1:1,updatedAt:analyzedAt}));
+    // One encrypted document and atomic rename commit all questions together.
+    // They reference the unchanged original image, without duplicate photo files.
+    await this.write(id,{id,kind:'photo_batch',records,rawPhotoAnalysis:result.rawPhotoAnalysis ?? null});
+    for(const item of records)this.parents.set(item.id,id);
+    return records[0];
   }
   async review(value) {
     if (value.confirmed !== true) fail('请先确认已对照原图核对题干和解答。');

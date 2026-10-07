@@ -12,19 +12,32 @@ export function setupQuestions({request, act, message, showError, getState}) {
     $('upload-form').hidden = hosted;
     $('upload-save').disabled = state.pending || !selected;
     $('analyze-question').disabled = state.pending || !state.verifiedAt || dirty || current?.imageReady===false;
-    $('analyze-question').textContent = state.pending ? '正在处理，请稍候…' : 'AI 分析题目 →';
+    $('analyze-question').textContent = state.pending ? '正在处理，请稍候…' : current?.photoId ? '重新分析当前题 →' : 'AI 识别并分析全部题目 →';
     $('save-draft').disabled = state.pending || !current?.analysis;
     $('approve-question').disabled = state.pending || !current?.analysis || !$('review-confirm').checked || !$('review-question').value.trim() || $('review-incomplete').checked || Boolean($('review-uncertainties').value.trim());
     $('analyze-note').textContent = dirty ? '你有未保存的修改，请先保存草稿。' : !state.verifiedAt ? '请先在设置完成模型连接测试。' : `使用当前模型 ${state.model} 分析，会使用 ChatGPT 订阅用量。`;
     if(hosted)$('analyze-note').textContent='请在 Windows 本机题库中分析题目。';
     $('upload-storage-note').textContent='原图完整保存在本机私有目录。点击分析后才发送给 ChatGPT。';
+    renderPhotoQuestions();
+  }
+  function renderPhotoQuestions() {
+    const container=$('photo-question-navigation');container.replaceChildren();
+    $('photo-question-group').hidden=!(current?.photoCount>1);
+    if(!current?.photoId)return;
+    $('photo-question-summary').textContent=`这张照片共 ${current.photoCount} 道题 · 当前题号 ${current.photoLabel}。点击切换，逐题核对和审核；小问保留在对应主题内。`;
+    for(const item of questions.filter(item=>item.photoId===current.photoId).sort((a,b)=>a.photoIndex-b.photoIndex)) {
+      const button=document.createElement('button');button.type='button';button.className='button subtle';
+      button.textContent=`题号 ${item.photoLabel} · ${labels[item.status]}`;
+      button.disabled=getState().pending || dirty || item.id===current.id;
+      button.addEventListener('click',()=>act(async()=>{await open(item.id);}));container.append(button);
+    }
   }
   function listIn(container, items) {
     container.replaceChildren();
     if (!items.length) {const p = document.createElement('p');p.className='muted';p.textContent='还没有保存的题目。从一张学校作业照片开始。';container.append(p);return;}
     for (const item of items) {
       const button = document.createElement('button');button.className='question-row';button.type='button';
-      const heading=document.createElement('strong');heading.textContent=item.question.slice(0,110) || item.source || '待分析的学校原题';
+      const heading=document.createElement('strong');heading.textContent=(item.photoLabel?`题号 ${item.photoLabel} · `:'')+(item.question.slice(0,110) || item.source || '待分析的学校原题');
       const meta=document.createElement('small');meta.textContent=`${item.date} · ${item.source || '来源未填写'} · ${labels[item.status] ?? item.status}`;
       button.append(heading,meta);button.addEventListener('click',()=>act(async()=>{await open(item.id);location.hash='upload';}));container.append(button);
     }
@@ -32,7 +45,7 @@ export function setupQuestions({request, act, message, showError, getState}) {
   function filteredList() {
     const query=$('bank-search').value.trim().toLowerCase(), status=$('bank-status').value,difficulty=$('bank-difficulty').value;
     const knowledge=$('bank-knowledge').value.trim(),method=$('bank-method').value.trim();
-    listIn($('question-list'),questions.filter(item=>(!query || `${item.question} ${item.source} ${(item.knowledgePoints ?? []).join(' ')} ${(item.mathMethods ?? []).join(' ')}`.toLowerCase().includes(query))
+    listIn($('question-list'),questions.filter(item=>(!query || `${item.photoLabel ?? ''} ${item.question} ${item.source} ${(item.knowledgePoints ?? []).join(' ')} ${(item.mathMethods ?? []).join(' ')}`.toLowerCase().includes(query))
       && (!status || item.status===status) && (!difficulty || item.difficulty===difficulty)
       && (!knowledge || (item.knowledgePoints ?? []).some(tag=>tag.includes(knowledge))) && (!method || (item.mathMethods ?? []).some(tag=>tag.includes(method)))));
   }
@@ -47,6 +60,7 @@ export function setupQuestions({request, act, message, showError, getState}) {
     $('original-count').textContent=questions.length;
     $('recent-empty').hidden=questions.length>0;
     $('bank-empty-note').textContent=`${questions.length} 道学校原题 · 本机私有记录`;
+    renderPhotoQuestions();
   }
   async function show(record) {
     const ticket=generation;
@@ -89,9 +103,10 @@ export function setupQuestions({request, act, message, showError, getState}) {
     await loadList();message('原图已完整保存。现在可以开始 AI 分析。');$('question-review').scrollIntoView({behavior:'smooth'});
   });});
   $('analyze-question').addEventListener('click',()=>act(async()=>{
-    message('正在分析题目，请等待完整回复。原图已保留。');
+    const firstAnalysis=!current.photoId;
+    message(firstAnalysis?'正在识别照片中的全部题目并逐题分析，请等待完整回复。原图已保留。':'正在重新分析当前题，不会改动同图其他题目的审核结果。');
     const value=await post('/api/questions/analyze',{id:current.id,revision:current.revision});await show(value.question);await loadList();
-    message(current.status==='needs_clarification'?'有条件需要确认，请对照原图补全；暂不能作为已审核题目。':'分析完成。请对照原图核对题干和解答。');
+    message(firstAnalysis && current.photoCount>1?`已从这张照片拆分 ${current.photoCount} 道题。请用题号按钮逐题核对；不清楚的题会单独标记待确认。`:current.status==='needs_clarification'?'有条件需要确认，请对照原图补全；暂不能作为已审核题目。':'分析完成。请对照原图核对题干和解答。');
   }));
   $('review-fields').addEventListener('input',event=>{if(event.target.id!=='review-confirm') {dirty=true;$('review-confirm').checked=false;}render();});
   function values() {
@@ -105,5 +120,5 @@ export function setupQuestions({request, act, message, showError, getState}) {
   }
   $('save-draft').addEventListener('click',()=>act(async()=>{const value=await post('/api/questions/draft',values());await show(value.question);await loadList();message('修改已保存为待审核草稿。');}));
   $('approve-question').addEventListener('click',()=>act(async()=>{const value=await post('/api/questions/review',values());await show(value.question);await loadList();message('人工审核已保存。学校原题已确认；变式和学生练习尚未开放。');}));
-  return {render,reset(){generation++;selection++;current=null;selected=null;questions=[];dirty=false;$('question-review').hidden=true;$('upload-preview').hidden=true;$('original-image').removeAttribute('src');$('original-image-link').removeAttribute('href');$('upload-preview-image').removeAttribute('src');$('photo-file').value='';$('camera-file').value='';for(const field of fields)$('review-'+field).value='';$('review-source').value='';$('question-provenance').textContent='';$('ai-provenance').textContent='';$('review-confirm').checked=false;$('question-list').replaceChildren();$('recent-questions').replaceChildren();$('original-count').textContent='0';}, async enter(page){if(['home','bank','upload'].includes(page))await loadList();if(page==='upload' && current)$('question-review').scrollIntoView();}};
+  return {render,reset(){generation++;selection++;current=null;selected=null;questions=[];dirty=false;$('question-review').hidden=true;$('upload-preview').hidden=true;$('original-image').removeAttribute('src');$('original-image-link').removeAttribute('href');$('upload-preview-image').removeAttribute('src');$('photo-file').value='';$('camera-file').value='';for(const field of fields)$('review-'+field).value='';$('review-source').value='';$('question-provenance').textContent='';$('ai-provenance').textContent='';$('review-confirm').checked=false;$('photo-question-group').hidden=true;$('photo-question-summary').textContent='';$('photo-question-navigation').replaceChildren();$('question-list').replaceChildren();$('recent-questions').replaceChildren();$('original-count').textContent='0';}, async enter(page){if(['home','bank','upload'].includes(page))await loadList();if(page==='upload' && current)$('question-review').scrollIntoView();}};
 }

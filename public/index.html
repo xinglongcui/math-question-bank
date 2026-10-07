@@ -28,7 +28,7 @@
       <a href="#progress" data-nav="progress"><span>◔</span>学习进度</a>
       <a href="#settings" data-nav="settings"><span>⚙</span>设置</a>
     </nav>
-    <div class="sidebar-foot"><span class="dot"></span><span id="side-status">连接状态待检查</span><small>V0.1 · 一道题的完整流程</small></div>
+    <div class="sidebar-foot"><span class="dot"></span><span id="side-status">连接状态待检查</span><small>V0.1 · 同图多题，逐题审核</small></div>
   </aside>
   <div class="workspace">
     <header class="topbar"><span>我的学习空间 <span class="separator">/</span> <strong id="breadcrumb">学习首页</strong></span><span class="edition">初一 · 数学</span></header>
@@ -41,7 +41,7 @@
           <article class="card journey"><div class="card-top"><h2>从理解，到掌握</h2><span class="muted">S0 → S3</span></div><p class="muted">解对一道题，是开始。遇到新的变式也能独立解决，才是掌握。</p><ol class="mastery"><li><span>S0</span><div><strong>还不会</strong><small>找到卡住的第一步</small></div></li><li><span>S1</span><div><strong>讲解后理解</strong><small>能解释为什么这样做</small></div></li><li><span>S2</span><div><strong>独立完成同类题</strong><small>不依赖提示完成解答</small></div></li><li><span>S3</span><div><strong>独立解决新变式</strong><small>真正掌握数学结构</small></div></li></ol><div class="journey-note">知识点和数学方法，将分别记录。</div></article>
         </div>
         <div class="stat-grid"><article class="card stat"><span>学校原题</span><strong><span id="original-count">0</span> <small>道</small></strong><p>学校教什么，从真实题目中了解</p></article><article class="card stat"><span>已验证的变式</span><strong>0 <small>道</small></strong><p>生成后独立验题，再进入练习</p></article><article class="card stat"><span>达到 S3 的知识点</span><strong>—</strong><p>完成首次训练后，开始记录</p></article></div>
-        <article class="card recent"><div class="card-top"><h2>最近上传</h2><span class="muted">原始照片 · 作业 · 试卷</span></div><div id="recent-questions" class="question-list"></div><div id="recent-empty" class="empty"><span class="empty-symbol">↥</span><strong>从一张学校作业开始</strong><p>上传一道题，分析后对照原图核对并人工审核。</p><a href="#upload" class="text-link">上传第一道题 →</a></div></article>
+        <article class="card recent"><div class="card-top"><h2>最近上传</h2><span class="muted">原始照片 · 作业 · 试卷</span></div><div id="recent-questions" class="question-list"></div><div id="recent-empty" class="empty"><span class="empty-symbol">↥</span><strong>从一张学校作业开始</strong><p>上传作业照片，自动拆分多题后逐题核对和人工审核。</p><a href="#upload" class="text-link">上传第一道题 →</a></div></article>
       </section>
       <section id="view-settings" class="view" hidden>
 
@@ -56,10 +56,10 @@
         <details class="card explanation"><summary>当前版本能做什么？</summary><p>支持本机保存学校原题照片、AI 分析、修改草稿、人工审核和分类筛选。无需家庭邮箱登录。照片和记录保存在 Windows 本机；云端同步暂停，变式与自适应练习后续开放。</p><p id="runtime-note">正在读取运行环境。</p></details>
       </section>
       <section id="view-upload" class="view" hidden>
-        <div class="page-heading"><div><p class="eyebrow">ONE QUESTION AT A TIME</p><h1>从一道学校原题开始</h1><p class="sub">保留原图，读懂题目，再确认解题思路。</p></div><span class="outline-badge">V0.1</span></div>
+        <div class="page-heading"><div><p class="eyebrow">ONE PHOTO, MULTIPLE QUESTIONS</p><h1>一张照片，多道学校原题</h1><p class="sub">保留原图，读懂题目，再确认解题思路。</p></div><span class="outline-badge">V0.1</span></div>
         <div class="notice amber" id="upload-cloud-note" hidden>云端接入尚未开放。请在 Windows 本机题库上传和分析；这里不会上传或保存你的照片。</div>
         <form id="upload-form" class="card upload-card">
-          <h2>01 · 上传一道题</h2><p class="muted">照片中尽量只保留一道题及完整条件。</p>
+          <h2>01 · 上传题目照片</h2><p class="muted">支持一张照片包含多道题（最多20道主题）。请拍清题号、完整题干和图形；同题的小问一起保留。</p>
           <p id="upload-storage-note" class="muted"></p><div class="file-actions"><label class="button primary" for="camera-file">拍照上传 ↥</label><input class="file-input" type="file" id="camera-file" accept="image/jpeg,image/png,image/webp" capture="environment"><label class="button subtle" for="photo-file">从相册／文件选择</label><input class="file-input" type="file" id="photo-file" accept="image/jpeg,image/png,image/webp"></div>
           <p class="fine-print">JPEG / PNG / WebP · 最大 8 MB · HEIC 请先转换 · PDF 后续开放</p>
           <div id="upload-preview" hidden><img id="upload-preview-image" alt="待上传的题目照片"><p id="selected-file" class="muted"></p></div>
@@ -68,7 +68,7 @@
         </form>
         <article id="question-review" class="card review-card" hidden>
           <div class="card-top"><h2>02 · 分析与审核</h2><span class="status-pill" id="question-status"></span></div><p id="question-provenance" class="muted"></p>
-          <div class="review-grid"><div class="original-panel"><a id="original-image-link" target="_blank" rel="noopener"><img id="original-image" alt="完整保存的学校原题，点击查看原图"></a><p class="fine-print">点击照片查看完整原图</p><button type="button" class="button primary" id="analyze-question">AI 分析题目 →</button><p id="analyze-note" class="fine-print"></p></div>
+          <div id="photo-question-group" class="notice" hidden><p id="photo-question-summary"></p><div id="photo-question-navigation" class="file-actions"></div></div><div class="review-grid"><div class="original-panel"><a id="original-image-link" target="_blank" rel="noopener"><img id="original-image" alt="完整保存的学校原题，点击查看原图"></a><p class="fine-print">点击照片查看完整原图</p><button type="button" class="button primary" id="analyze-question">AI 分析题目 →</button><p id="analyze-note" class="fine-print"></p></div>
           <div id="review-fields" hidden><p id="ai-provenance" class="fine-print"></p><p class="notice amber">请对照原图核对题干、条件和解答。修改后先保存草稿，确认完整且正确后再保存审核。人工确认不等于独立验题。</p>
             <div class="field-grid"><label>来源<input id="review-source" maxlength="200"></label><label>日期<input id="review-date" type="date"></label></div>
             <label>标准题干<textarea id="review-question" rows="4"></textarea></label>

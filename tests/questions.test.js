@@ -74,6 +74,46 @@ test('MathAI supplies a real image input and rejects malformed completed output'
   assert.equal(sent[0].content[1].type,'input_image');assert.equal(sent[0].content[1].image_url,image);
   await assert.rejects(new MathAI({invoke:async()=>({text:'not JSON'})}).analyzeQuestion({model:'model',image}),{code:'invalid_analysis_json'});
 });
+test('a multi-question photo commits atomically, shares its original and keeps independent reviews after restart',async t=>{
+  const store=await storeFor(t),uploaded=await store.create({image,source:'公开多题例图',date:'2026-10-07'});
+  const second={...analysis,label:'16',question:'（1）解方程；（2）检验结果',answer:'',steps:[],uncertainties:['第二小问条件不清楚'],needsClarification:true};
+  const raw={questions:[{...analysis,label:'15'},second]};
+  let prompt;
+  const math=new MathAI({invoke:async(_,input)=>{prompt=input[0].content[0].text;return {text:JSON.stringify(raw)};}});
+  const first=await store.analyze(uploaded.id,1,math,'model');
+  assert.match(prompt,/所有数学主题/);assert.match(prompt,/小问必须合并/);
+  assert.equal(first.id,uploaded.id);assert.equal(first.photoCount,2);assert.equal(first.photoLabel,'15');
+  const listed=await store.list(),child=listed.find(q=>q.id!==first.id);
+  assert.equal(listed.length,2);assert.equal(child.status,'needs_clarification');
+  assert.equal((await readdir(store.directory)).filter(f=>f.endsWith('.image.dpapi')).length,1);
+  const restarted=new QuestionStore(store.directory,store.protector);
+  assert.deepEqual((await restarted.get(child.id)).aiAnalysis,second);
+  assert.deepEqual((await restarted.image(child.id)).bytes,(await restarted.image(first.id)).bytes);
+  const approved=await restarted.review({...first,confirmed:true});assert.equal(approved.status,'approved');
+  const other=await restarted.get(child.id);assert.equal(other.status,'needs_clarification');
+  await assert.rejects(restarted.review({...other,confirmed:true}),{code:'invalid_question'});
+  let target;
+  const reanalyzed=await restarted.analyze(other.id,other.revision,{analyzeQuestion:async args=>{target=args.target;return {analysis,model:'model'};}},'model');
+  assert.deepEqual(target,{index:2,label:'16'});assert.equal(reanalyzed.status,'pending_review');
+  assert.equal((await restarted.list()).length,2);assert.equal((await restarted.get(first.id)).status,'approved');
+  assert.equal((await restarted.get(first.id)).revision,approved.revision);
+});
+test('a malformed batch or failed encrypted commit leaves the original record intact',async t=>{
+  const store=await storeFor(t),uploaded=await store.create({image,date:'2026-10-07'});
+  const math={analyzeQuestion:async()=>({model:'model',analyses:[{analysis},{analysis:{...analysis,steps:'invalid'}}]})};
+  await assert.rejects(store.analyze(uploaded.id,1,math,'model'),{code:'invalid_question'});
+  assert.equal((await store.get(uploaded.id)).revision,1);assert.equal((await store.list()).length,1);
+  const normal=store.protector.protect;
+  store.protector.protect=async bytes=>{if(bytes.toString().includes('photo_batch'))throw new Error('simulated storage failure');return normal(bytes);};
+  await assert.rejects(store.analyze(uploaded.id,1,{analyzeQuestion:async()=>({model:'model',analyses:[{analysis},{analysis}]})},'model'),/storage failure/);
+  assert.equal((await store.get(uploaded.id)).status,'uploaded');assert.equal((await store.list()).length,1);
+  assert.deepEqual((await store.image(uploaded.id)).bytes,decodeImage(image).bytes);
+});
+test('oversized and empty multi-question responses are not silently truncated',async()=>{
+  for(const raw of [{questions:[]},{questions:Array(21).fill({...analysis,label:'1'})},{tooManyQuestions:true,questions:[]}]) {
+    await assert.rejects(new MathAI({invoke:async()=>({text:JSON.stringify(raw)})}).analyzeQuestion({model:'model',image}));
+  }
+});
 test('HTTP upload, analysis, draft and approval use verified selected subscription model',async t=>{
   const store=await storeFor(t),server=http.createServer();server.listen(0,'127.0.0.1');await new Promise(resolve=>server.once('listening',resolve));t.after(()=>server.close());
   const origin=`http://127.0.0.1:${server.address().port}`;
