@@ -63,22 +63,25 @@ export function createApp({vault, origin, fetchImpl = fetch, verifyIdentity}) {
           connected: Boolean(credential), planEnabled: credential?.scopes?.includes(DIRECT_SCOPE) ?? false,
           email: credential?.email ? credential.email.replace(/^(.{1,2}).*(@.*)$/, '$1***$2') : null,
           expiresAt: credential?.expires ?? null, model: vault.data.model,
-          verifiedAt: vault.data.verifiedAt, models: provider.models});
+          verifiedAt: vault.data.verifiedAt, models: provider.models,
+          authResult: session.authResult ?? null});
       }
       if (req.method === 'GET' && url.pathname === '/auth/callback') {
         if (busy) throw new AppError('有请求正在处理，请稍后重新连接。', 'busy', 'callback', 409);
         busy = true; locked = true;
         try {
           await oauth.finish(url, sid); provider.models = [];
+          session.authResult = {phase: 'connected', at: new Date().toISOString()};
           res.statusCode = 303; res.setHeader('Location', '/#settings'); return res.end();
         } catch (error) {
           // Strip code/token from address bar, retain sanitized error in browser session only.
           session.callbackError = publicError(error);
+          session.authResult = {phase: 'failed', error: session.callbackError, at: new Date().toISOString()};
           res.statusCode = 303; res.setHeader('Location', '/#settings'); return res.end();
         }
       }
       if (req.method === 'GET' && url.pathname === '/api/login-result') {
-        const error = session.callbackError ?? null; delete session.callbackError; return send(res, 200, {error});
+        const error = session.callbackError ?? null; return send(res, 200, {error});
       }
       if (req.method !== 'POST' || !['/api/connect', '/api/models', '/api/model', '/api/test', '/api/disconnect'].includes(url.pathname))
         throw new AppError('页面不存在。', 'not_found', 'routing', 404);
@@ -87,7 +90,11 @@ export function createApp({vault, origin, fetchImpl = fetch, verifyIdentity}) {
       const data = await body(req);
       if (busy) throw new AppError('正在处理其他请求，请稍后重试。', 'busy', 'request', 409);
       busy = true; locked = true;
-      if (url.pathname === '/api/connect') return send(res, 200, {url: oauth.start(sid, data.newAccount === true)});
+      if (url.pathname === '/api/connect') {
+        delete session.callbackError;
+        session.authResult = {phase: 'awaiting_callback', at: new Date().toISOString()};
+        return send(res, 200, {url: oauth.start(sid, data.newAccount === true)});
+      }
       if (url.pathname === '/api/models') return send(res, 200, {models: await provider.listModels()});
       if (url.pathname === '/api/test') return send(res, 200, await provider.test(data.model));
       if (url.pathname === '/api/model') {

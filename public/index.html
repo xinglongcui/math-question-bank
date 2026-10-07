@@ -31,6 +31,7 @@
   <div class="workspace">
     <header class="topbar"><span>我的学习空间 <span class="separator">/</span> <strong id="breadcrumb">学习首页</strong></span><span class="edition">初一 · 数学</span></header>
     <main id="main" tabindex="-1">
+      <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
       <section id="view-home" class="view">
         <div class="page-heading"><div><p class="eyebrow" id="today">每一天，都有新的发现</p><h1>每天一题，练会一种思路。</h1><p class="sub">从学校的真实题目出发，把理解变成独立解决问题的能力。</p></div><span class="outline-badge">学习空间已就绪</span></div>
         <div class="home-grid">
@@ -52,7 +53,6 @@
         <details class="card explanation"><summary>当前版本能做什么？</summary><p>V0.0 只验证授权、模型目录和一次完整推理；当前没有学生数据或正式题库。学校原题与 AI 变式将分开保存，知识点与数学方法分别标记。Supabase 会在题库阶段接入。</p><p id="runtime-note">正在读取运行环境。</p></details>
       </section>
       <section id="view-future" class="view" hidden><div class="page-heading"><div><p class="eyebrow">NEXT STEP</p><h1 id="future-title"></h1><p class="sub" id="future-description"></p></div></div><article class="card future-card"><span class="empty-symbol">∑</span><h2>先打通接入，再开始一道题</h2><p>这一阶段先验证 ChatGPT 订阅能否驱动系统。完成后，从上传一张学校题目照片开始，逐步加入题目分析、人工审核和变式练习。</p><a href="#settings" class="button primary">前往 ChatGPT 设置 →</a></article></section>
-      <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
       <footer>数学题库 <span>·</span> 初一数学 <span>·</span> V0.0 接入验证</footer>
     </main>
   </div>

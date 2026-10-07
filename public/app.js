@@ -67,6 +67,7 @@ async function refresh() {
   const response = await fetch('/api/status', {cache:'no-store'});
   const data = await response.json(); if (!response.ok) throw data.error;
   state = data; render();
+  if (state.authResult?.phase === 'failed') showError(state.authResult.error);
 }
 async function act(fn) {
   if (pending) return;
@@ -111,6 +112,8 @@ $('disconnect').addEventListener('click', () => act(async () => {
 }));
 window.addEventListener('hashchange', route);
 window.addEventListener('online', () => refresh().catch(showError));
+window.addEventListener('pageshow', event => { if (event.persisted) refresh().catch(showError); });
+document.addEventListener('visibilitychange', () => { if (!document.hidden && !pending) refresh().catch(showError); });
 $('today').textContent = new Intl.DateTimeFormat('zh-CN', {timeZone:'Asia/Shanghai', month:'long', day:'numeric', weekday:'long'}).format(new Date());
 route(); render();
 try {

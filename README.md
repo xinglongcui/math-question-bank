@@ -25,7 +25,7 @@ npm start
 
 若官方账户选择页显示 `400 Invalid content type: text/html`：说明该页未得到预期格式的响应，不能据此判断订阅权限。不要只复制已有授权 URL 到另一浏览器，因为回调与发起浏览器绑定；应在 Edge/Chrome 从题库设置重新发起。若系统浏览器也失败，继续检查网络/浏览器会话；根因尚未确认。本应用无法直接修复 OpenAI 域名内的页面。
 
-网络代理可通过 `HTTP_PROXY` / `HTTPS_PROXY` / `NO_PROXY` 设置；启动命令启用 Node 环境代理。不要把代理凭据提交到仓库。服务仅监听本机，不能用于 iPad 局域网访问。
+启动脚本优先使用已有 `HTTP_PROXY` / `HTTPS_PROXY`；没有环境代理时，自动沿用已启用的 Windows HTTP/HTTPS 系统代理，仅传给当前 Node 子进程，不修改系统或输出代理地址。回环请求始终绕过代理。PAC/SOCKS 不会自动转换，需手动提供可用 HTTP 代理。不要把代理凭据提交到仓库。服务仅监听本机，不能用于 iPad 局域网访问。
 
 凭据默认保存在项目 `.local/profile.dpapi`，由 Windows DPAPI CurrentUser 加密，已被 `.gitignore` 排除；可用 `MATHBANK_DATA_DIR` 指定私有目录。主机标识随重启保留。凭据与 Windows 用户/设备关联；换设备需重新授权。登录事务只在本机内存保留 10 分钟，重启需重新发起登录。服务只支持一个运行进程、一个家庭账户；不适合作为多人云端服务。
 
