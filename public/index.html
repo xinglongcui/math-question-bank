@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#f6f5f1">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="数学题库">
+  <meta name="description" content="从学校的真实题目出发，练会一种数学思路。">
+  <title>数学题库 · 每天进步一点</title>
+  <link rel="icon" href="/icon.svg" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="/apple-touch-icon.png">
+  <link rel="manifest" href="/manifest.webmanifest">
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <a class="skip" href="#main">跳到主要内容</a>
+  <aside class="sidebar">
+    <a class="brand" href="#home"><span class="brand-icon">∑</span><span>数学题库<small>一点一点，学会思考</small></span></a>
+    <div class="course">初一数学 <span>家庭学习空间</span></div>
+    <nav aria-label="主导航">
+      <a href="#home" data-nav="home"><span>⌂</span>学习首页</a>
+      <a href="#upload" data-nav="upload"><span>↥</span>上传题目</a>
+      <a href="#bank" data-nav="bank"><span>▤</span>我的题库</a>
+      <a href="#progress" data-nav="progress"><span>◔</span>学习进度</a>
+      <a href="#settings" data-nav="settings"><span>⚙</span>设置</a>
+    </nav>
+    <div class="sidebar-foot"><span class="dot"></span><span id="side-status">连接状态待检查</span><small>V0.0 · 接入验证</small></div>
+  </aside>
+  <div class="workspace">
+    <header class="topbar"><span>我的学习空间 <span class="separator">/</span> <strong id="breadcrumb">学习首页</strong></span><span class="edition">初一 · 数学</span></header>
+    <main id="main" tabindex="-1">
+      <section id="view-home" class="view">
+        <div class="page-heading"><div><p class="eyebrow" id="today">每一天，都有新的发现</p><h1>每天一题，练会一种思路。</h1><p class="sub">从学校的真实题目出发，把理解变成独立解决问题的能力。</p></div><span class="outline-badge">学习空间已就绪</span></div>
+        <div class="home-grid">
+          <article class="tonight card"><div class="card-top"><span class="eyebrow">TODAY’S PRACTICE</span><span class="pill">10–15 分钟</span></div><h2>今晚一题</h2><p>先连接 ChatGPT，<br>再开启你的第一道变式练习。</p><div class="math-drawing" aria-hidden="true"><span class="formula">a² − b²</span><span class="bracket">= (a + b)(a − b)</span><span class="draw-note">看见结构，找到突破口</span><i></i></div><a href="#settings" class="button primary">连接 ChatGPT <span>→</span></a><small>变式练习将在订阅接入验证完成后开放。</small></article>
+          <article class="card journey"><div class="card-top"><h2>从理解，到掌握</h2><span class="muted">S0 → S3</span></div><p class="muted">解对一道题，是开始。遇到新的变式也能独立解决，才是掌握。</p><ol class="mastery"><li><span>S0</span><div><strong>还不会</strong><small>找到卡住的第一步</small></div></li><li><span>S1</span><div><strong>讲解后理解</strong><small>能解释为什么这样做</small></div></li><li><span>S2</span><div><strong>独立完成同类题</strong><small>不依赖提示完成解答</small></div></li><li><span>S3</span><div><strong>独立解决新变式</strong><small>真正掌握数学结构</small></div></li></ol><div class="journey-note">知识点和数学方法，将分别记录。</div></article>
+        </div>
+        <div class="stat-grid"><article class="card stat"><span>学校原题</span><strong>0 <small>道</small></strong><p>学校教什么，从真实题目中了解</p></article><article class="card stat"><span>已验证的变式</span><strong>0 <small>道</small></strong><p>生成后独立验题，再进入练习</p></article><article class="card stat"><span>达到 S3 的知识点</span><strong>—</strong><p>完成首次训练后，开始记录</p></article></div>
+        <article class="card recent"><div class="card-top"><h2>最近上传</h2><span class="muted">原始照片 · 作业 · 试卷</span></div><div class="empty"><span class="empty-symbol">↥</span><strong>从一张学校作业开始</strong><p>上传、分析和人工审核将在 V0.1 开放。现在先完成 ChatGPT 接入验证。</p><a href="#settings" class="text-link">前往设置 →</a></div></article>
+      </section>
+      <section id="view-settings" class="view" hidden>
+        <div class="page-heading"><div><p class="eyebrow">ACCOUNT & MODEL</p><h1>连接你的 ChatGPT</h1><p class="sub">用已有订阅，开启题目分析、变式生成和答案批改。</p></div><span class="outline-badge">V0.0</span></div>
+        <div id="hosted-notice" class="notice amber" hidden><strong>云端订阅接入尚未开放</strong><p>当前网页可在 iPad 预览。远程使用 ChatGPT 订阅需要申请接入；本机授权验证请使用 Windows 版。</p><a href="https://openai.com/form/sign-in-with-chatgpt-interest/" target="_blank" rel="noopener noreferrer">查看官方接入申请 →</a></div>
+        <div class="settings-grid">
+          <article class="card account-card"><div class="card-top"><div class="provider-title"><span class="provider-icon">◎</span><div><h2>ChatGPT</h2><p>ChatGPT 订阅连接</p></div></div><span class="status-pill" id="connection-status">检查中</span></div><p class="account-description" id="connection-description">正在检查当前连接状态。</p><div class="account-buttons"><button class="button primary" id="connect">Continue with ChatGPT <span>↗</span></button><button class="button subtle" id="new-account" hidden>连接其他账号</button><button class="button subtle" id="disconnect" hidden>断开连接</button></div><p class="fine-print">授权仅用于已允许的模型请求。登录与订阅调用验证是两个步骤。</p><div class="account-meta"><span>用量来源<strong>ChatGPT 订阅</strong></span><span>账号<strong id="account-email">尚未连接</strong></span></div><a class="text-link" href="https://chatgpt.com/#settings/Usage" target="_blank" rel="noopener noreferrer">管理 ChatGPT 用量与应用权限 ↗</a></article>
+          <article class="card steps-card"><h2>三步完成接入验证</h2><ol class="setup-steps"><li id="step-login"><span>01</span><div><strong>登录并授权</strong><small>在官方页面允许使用 ChatGPT 计划</small></div></li><li id="step-model"><span>02</span><div><strong>选择可用模型</strong><small>从你的账户实时获取模型列表</small></div></li><li id="step-test"><span>03</span><div><strong>完成一次真实调用</strong><small>收到完整回复后，才标记验证成功</small></div></li></ol><div class="journey-note">接入验证通过，再开始一道题的完整流程。</div></article>
+        </div>
+        <article class="card model-card"><div class="card-top"><div><h2>当前模型</h2><p class="muted">第一阶段，所有 AI 任务统一使用这个模型。</p></div><button class="button subtle" id="refresh-models" disabled>↻ 刷新模型</button></div><label for="model">模型选择</label><select id="model" disabled><option value="">连接账号后获取可用模型</option></select><div class="test-row"><div><strong>最小连接测试</strong><p class="muted">发送一条简单请求。此操作会使用你的 ChatGPT 用量。</p></div><button class="button primary" id="test" disabled>测试连接 →</button></div><div id="test-result" class="test-result" hidden><span class="eyebrow">MODEL RESPONSE</span><p id="test-output"></p><small id="test-meta"></small></div><p id="last-verified" class="fine-print"></p></article>
+        <details class="card explanation"><summary>当前版本能做什么？</summary><p>V0.0 只验证授权、模型目录和一次完整推理；当前没有学生数据或正式题库。学校原题与 AI 变式将分开保存，知识点与数学方法分别标记。Supabase 会在题库阶段接入。</p><p id="runtime-note">正在读取运行环境。</p></details>
+      </section>
+      <section id="view-future" class="view" hidden><div class="page-heading"><div><p class="eyebrow">NEXT STEP</p><h1 id="future-title"></h1><p class="sub" id="future-description"></p></div></div><article class="card future-card"><span class="empty-symbol">∑</span><h2>先打通接入，再开始一道题</h2><p>这一阶段先验证 ChatGPT 订阅能否驱动系统。完成后，从上传一张学校题目照片开始，逐步加入题目分析、人工审核和变式练习。</p><a href="#settings" class="button primary">前往 ChatGPT 设置 →</a></article></section>
+      <div id="message" class="notice" role="status" aria-live="polite" hidden></div>
+      <footer>数学题库 <span>·</span> 初一数学 <span>·</span> V0.0 接入验证</footer>
+    </main>
+  </div>
+</body>
+</html>

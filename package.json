@@ -1,0 +1,15 @@
+{
+  "name": "math-question-bank",
+  "version": "0.0.1",
+  "private": true,
+  "type": "module",
+  "description": "iPad-first math practice · ChatGPT subscription proof",
+  "engines": {"node": ">=24"},
+  "scripts": {
+    "start": "node --use-env-proxy src/server.js",
+    "dev": "node --use-env-proxy --watch src/server.js",
+    "test": "node --test",
+    "build": "node scripts/build.js"
+  },
+  "dependencies": {"jose": "6.2.12"}
+}
