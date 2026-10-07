@@ -31,6 +31,9 @@ npm start
 
 ## Vercel / iPad 页面
 
+已上线：[数学题库](https://math-question-bank-nu.vercel.app/)。当前使用 Vercel Drop 上传构建目录，没有 Git 自动部署连接。构建生成 dist/vercel.json，仅保留响应头配置；后续可把整个 dist/ 再上传到既有项目。生产 URL 已登记在 Supabase 返回地址中。家庭账号登录与 Storage 上传仍在验收，云端 AI 未开放。
+
+
 `npm run build` 生成 `dist/`，`vercel.json` 已配置静态部署。在 Vercel 导入仓库或该分支，Framework Preset 为 Other，构建命令 `npm run build`，输出目录 `dist`。**无需密钥或环境变量**。
 
 静态 PWA 可以通过 Supabase 家庭登录保存、阅读和审核自己的云端题目；需完成登录、数据库和私有照片端到端验收。ChatGPT 设置仍显示“等待云端接入”，不会改用其他计费路线。iPad 打开实际 HTTPS 地址 → Safari 分享 → 添加到主屏幕。离线只能查看页面外壳，私有题目与照片不进入 Service Worker 缓存。浏览器尺寸检查不等于真机 Safari 验证，真机安装仍需用户验证。

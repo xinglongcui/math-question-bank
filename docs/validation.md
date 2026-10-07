@@ -30,3 +30,5 @@
 
 新增自动检查覆盖云端账户验证、版本冲突、未完成条件拒绝审核和原图不可覆盖；PGlite PostgreSQL 引擎执行同一迁移/RLS测试，验证 Storage 限制在原有宽松策略下仍生效。仍需两个真实账号进行 REST/Storage 隔离和图片上传验收，不能把模拟 SDK 通过当成云端上传成功。
 用户确认登录邮件能正常收到。修正回跳后的重新发送请求返回 over_email_send_rate_limit，已停止重试；页面仍未登录家庭账号。新增页面异步隐私测试验证：切换账号后迟到的列表不会重新出现，退出后迟到的签名照片链接不会恢复原图。
+
+Vercel 项目 math-question-bank 显示 Ready，地址 https://math-question-bank-nu.vercel.app/。线上首页成功加载，生产源为 Vercel Drop，无 Git 连接。已添加实际 HTTPS 设置页返回地址并更新 Supabase Site URL，保留本机精确返回地址。浏览器当前渲染宽度 570，内容宽度 555，无水平溢出；这不代表 iPad 真机或准确 820 宽度测试。额外响应头部署配置尚待更新上传。
