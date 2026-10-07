@@ -69,7 +69,8 @@ export class QuestionStore {
     const records = [];
     for (const file of files.filter(file => file.endsWith('.json.dpapi'))) {
       const record = await this.get(file.slice(0, -11));
-      records.push({id:record.id, source:record.source, date:record.date, status:record.status, question:record.analysis?.question ?? '', createdAt:record.createdAt});
+      records.push({id:record.id, source:record.source, date:record.date, status:record.status, question:record.analysis?.question ?? '', createdAt:record.createdAt,
+        difficulty:record.analysis?.difficulty, knowledgePoints:record.analysis?.knowledgePoints ?? [], mathMethods:record.analysis?.mathMethods ?? []});
     }
     return records.sort((a,b) => b.createdAt.localeCompare(a.createdAt));
   }

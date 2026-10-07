@@ -26,6 +26,8 @@ if (-not $env:HTTPS_PROXY -and -not $env:HTTP_PROXY -and -not $env:ALL_PROXY) {
 # Always keep browser callbacks local, including when an environment proxy is provided.
 $taskBypass = @($env:NO_PROXY, '127.0.0.1', 'localhost', '::1') | Where-Object { $_ }
 $env:NO_PROXY = $taskBypass -join ','
+& node scripts/build.js
+if ($LASTEXITCODE -ne 0) { exit $LASTEXITCODE }
 $taskNodeArgs = @('--use-env-proxy')
 if ($Watch) { $taskNodeArgs += '--watch' }
 $taskNodeArgs += 'src/server.js'

@@ -8,12 +8,14 @@ import {ChatGPTOAuth, DIRECT_SCOPE} from './oauth.js';
 import {ChatGPTProvider, MathAI} from './provider.js';
 import {QuestionStore} from './questions.js';
 import {AppError, publicError} from './errors.js';
+import {cloudConfig} from '../public/cloud-config.js';
 
 const PUBLIC = fileURLToPath(new URL('../public/', import.meta.url));
 const assets = new Map([
   ['/', ['index.html', 'text/html']], ['/index.html', ['index.html', 'text/html']],
   ['/app.js', ['app.js', 'text/javascript']], ['/styles.css', ['styles.css', 'text/css']],
   ['/questions-ui.js', ['questions-ui.js', 'text/javascript']],
+  ['/app.bundle.js', ['app.bundle.js', 'text/javascript']],
   ['/sw.js', ['sw.js', 'text/javascript']], ['/manifest.webmanifest', ['manifest.webmanifest', 'application/manifest+json']],
   ['/icon.svg', ['icon.svg', 'image/svg+xml']], ['/icon-192.png', ['icon-192.png', 'image/png']],
   ['/icon-512.png', ['icon-512.png', 'image/png']], ['/apple-touch-icon.png', ['apple-touch-icon.png', 'image/png']],
@@ -49,7 +51,7 @@ export function createApp({vault, origin, fetchImpl = fetch, verifyIdentity, que
     res.setHeader('Cache-Control', 'no-store');
     res.setHeader('X-Content-Type-Options', 'nosniff');
     res.setHeader('Referrer-Policy', 'no-referrer');
-    res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'; form-action 'none'");
+    res.setHeader('Content-Security-Policy', `default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data: ${cloudConfig.url}; connect-src 'self' ${cloudConfig.url}; base-uri 'none'; frame-ancestors 'none'; form-action 'none'`);
     let locked = false;
     try {
       if (req.headers.host !== new URL(origin).host) throw new AppError('访问地址不匹配，请使用启动时显示的地址。', 'host_mismatch', 'request', 403);
@@ -96,13 +98,17 @@ export function createApp({vault, origin, fetchImpl = fetch, verifyIdentity, que
         }
         return send(res, 200, {question:await questions.get(id)});
       }
-      if (req.method !== 'POST' || !['/api/connect', '/api/models', '/api/model', '/api/test', '/api/disconnect', '/api/questions', '/api/questions/analyze', '/api/questions/review', '/api/questions/draft'].includes(url.pathname))
+      if (req.method !== 'POST' || !['/api/connect', '/api/models', '/api/model', '/api/test', '/api/disconnect', '/api/questions', '/api/questions/analyze', '/api/questions/review', '/api/questions/draft', '/api/analyze-image'].includes(url.pathname))
         throw new AppError('页面不存在。', 'not_found', 'routing', 404);
       if (req.headers.origin !== origin || req.headers['x-csrf-token'] !== session.csrf)
         throw new AppError('请求来源或会话校验失败，请刷新页面。', 'csrf', 'request', 403);
-      const data = await body(req, url.pathname === '/api/questions' ? 12 * 1024 * 1024 : /\/api\/questions\/(review|draft)$/.test(url.pathname) ? 200_000 : 8192);
+      const data = await body(req, ['/api/questions','/api/analyze-image'].includes(url.pathname) ? 12 * 1024 * 1024 : /\/api\/questions\/(review|draft)$/.test(url.pathname) ? 200_000 : 8192);
       if (busy) throw new AppError('正在处理其他请求，请稍后重试。', 'busy', 'request', 409);
       busy = true; locked = true;
+      if (url.pathname === '/api/analyze-image') {
+        if (!vault.data.verifiedAt || !vault.data.model) throw new AppError('请先完成模型连接测试。', 'model_not_verified', 'analysis', 400);
+        return send(res, 200, await math.analyzeQuestion({model:vault.data.model,image:data.image}));
+      }
       if (url.pathname === '/api/questions') return send(res, 201, {question:await questions.create(data)});
       if (url.pathname === '/api/questions/analyze') {
         if (!vault.data.verifiedAt || !vault.data.model) throw new AppError('请先在设置选择模型并完成一次连接测试。', 'model_not_verified', 'analysis', 400);

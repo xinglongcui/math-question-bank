@@ -12,7 +12,7 @@
   <link rel="apple-touch-icon" href="/apple-touch-icon.png">
   <link rel="manifest" href="/manifest.webmanifest">
   <link rel="stylesheet" href="/styles.css">
-  <script type="module" src="/app.js"></script>
+  <script type="module" src="/app.bundle.js"></script>
 </head>
 <body>
   <a class="skip" href="#main">跳到主要内容</a>
@@ -42,7 +42,12 @@
         <article class="card recent"><div class="card-top"><h2>最近上传</h2><span class="muted">原始照片 · 作业 · 试卷</span></div><div id="recent-questions" class="question-list"></div><div id="recent-empty" class="empty"><span class="empty-symbol">↥</span><strong>从一张学校作业开始</strong><p>上传一道题，分析后对照原图核对并人工审核。</p><a href="#upload" class="text-link">上传第一道题 →</a></div></article>
       </section>
       <section id="view-settings" class="view" hidden>
-        <div class="page-heading"><div><p class="eyebrow">ACCOUNT & MODEL</p><h1>连接你的 ChatGPT</h1><p class="sub">用已有订阅，开启题目分析、变式生成和答案批改。</p></div><span class="outline-badge">V0.1</span></div>
+
+        <div class="page-heading"><div><p class="eyebrow">ACCOUNT & MODEL</p><h1>账号与模型</h1><p class="sub">登录私有题库，并使用你的 ChatGPT 订阅分析题目。</p></div><span class="outline-badge">V0.2 接入验证</span></div>
+        <article class="card upload-card" id="cloud-account"><div class="card-top"><div><h2>家庭题库 · Supabase</h2><p class="muted">登录家庭题库后，选择是否把新题保存到云端。ChatGPT 授权单独管理。</p></div><span id="cloud-status" class="status-pill">准备中</span></div>
+          <form id="cloud-login-form"><div class="field-grid"><label>家庭邮箱<input id="cloud-email" type="email" autocomplete="email" required></label><label>邮件验证码（如邮件提供）<input id="cloud-code" autocomplete="one-time-code" inputmode="numeric" maxlength="10"></label></div><div class="file-actions"><button class="button subtle" type="submit" id="cloud-send">发送登录邮件</button><button class="button primary" type="button" id="cloud-verify">确认验证码</button></div><p class="fine-print">默认邮件可能包含登录链接；需在发起登录的同一浏览器打开。初次使用要先配置 Supabase 登录邮件模板与允许的返回地址。</p></form>
+          <div id="cloud-connected" hidden><p id="cloud-user" class="muted"></p><div class="file-actions"><button type="button" class="button subtle" id="cloud-check">检查题库连接</button><button type="button" class="button subtle" id="cloud-signout">退出家庭账号</button></div><label class="check-label"><input id="cloud-enable" type="checkbox" disabled>将之后新上传的题目保存到云端私有题库</label><p class="fine-print">不会自动上传本机已保存的题目。云端 AI 分析仍等待订阅接入许可；本机页面可继续使用已连接的 ChatGPT。</p></div>
+        </article>
         <div id="hosted-notice" class="notice amber" hidden><strong>云端订阅接入尚未开放</strong><p>当前网页可在 iPad 预览。远程使用 ChatGPT 订阅需要申请接入；本机授权验证请使用 Windows 版。</p><a href="https://openai.com/form/sign-in-with-chatgpt-interest/" target="_blank" rel="noopener noreferrer">查看官方接入申请 →</a></div>
         <div id="local-browser-notice" class="notice amber" hidden><strong>请在 Edge 或 Chrome 中完成本机授权</strong><p>复制下方题库地址到 Windows 浏览器，再点击 Continue with ChatGPT。请在同一个浏览器中发起并完成授权；不要复制已跳转的授权网址。</p><p id="local-address"></p><button class="button subtle" id="copy-address">复制题库地址</button><p>若 OpenAI 的账户选择页面提示 Invalid content type，先重新发起登录；若仍失败，检查浏览器会话与网络。这个错误本身不说明订阅权限不足。</p></div>
         <div class="settings-grid">
@@ -50,14 +55,14 @@
           <article class="card steps-card"><h2>三步完成接入验证</h2><ol class="setup-steps"><li id="step-login"><span>01</span><div><strong>登录并授权</strong><small>在官方页面允许使用 ChatGPT 计划</small></div></li><li id="step-model"><span>02</span><div><strong>选择可用模型</strong><small>从你的账户实时获取模型列表</small></div></li><li id="step-test"><span>03</span><div><strong>完成一次真实调用</strong><small>收到完整回复后，才标记验证成功</small></div></li></ol><div class="journey-note">接入验证通过，再开始一道题的完整流程。</div></article>
         </div>
         <article class="card model-card"><div class="card-top"><div><h2>当前模型</h2><p class="muted">第一阶段，所有 AI 任务统一使用这个模型。</p></div><button class="button subtle" id="refresh-models" disabled>↻ 刷新模型</button></div><label for="model">模型选择</label><select id="model" disabled><option value="">连接账号后获取可用模型</option></select><div class="test-row"><div><strong>最小连接测试</strong><p class="muted">发送一条简单请求。此操作会使用你的 ChatGPT 用量。</p></div><button class="button primary" id="test" disabled>测试连接 →</button></div><div id="test-result" class="test-result" hidden><span class="eyebrow">MODEL RESPONSE</span><p id="test-output"></p><small id="test-meta"></small></div><p id="last-verified" class="fine-print"></p></article>
-        <details class="card explanation"><summary>当前版本能做什么？</summary><p>V0.1 支持本机保存学校原题照片、AI 分析、修改草稿和人工审核。知识点与数学方法分别标记，原始 AI 分析单独保留。Supabase 正式题库、变式与自适应练习后续接入。</p><p id="runtime-note">正在读取运行环境。</p></details>
+        <details class="card explanation"><summary>当前版本能做什么？</summary><p>支持保存学校原题照片、AI 分析、修改草稿、人工审核和题库筛选。知识点与数学方法分别标记，原始 AI 分析单独保留。家庭账号登录并检查连接后，可启用 Supabase 私有存储。变式与自适应练习后续开放。</p><p id="runtime-note">正在读取运行环境。</p></details>
       </section>
       <section id="view-upload" class="view" hidden>
         <div class="page-heading"><div><p class="eyebrow">ONE QUESTION AT A TIME</p><h1>从一道学校原题开始</h1><p class="sub">保留原图，读懂题目，再确认解题思路。</p></div><span class="outline-badge">V0.1</span></div>
         <div class="notice amber" id="upload-cloud-note" hidden>云端接入尚未开放。请在 Windows 本机题库上传和分析；这里不会上传或保存你的照片。</div>
         <form id="upload-form" class="card upload-card">
-          <h2>01 · 上传一道题</h2><p class="muted">照片中尽量只保留一道题及完整条件。原图将完整保存在本机私有目录；点击分析后才发送给 ChatGPT。</p>
-          <div class="file-actions"><label class="button primary" for="camera-file">拍照上传 ↥</label><input class="file-input" type="file" id="camera-file" accept="image/jpeg,image/png,image/webp" capture="environment"><label class="button subtle" for="photo-file">从相册／文件选择</label><input class="file-input" type="file" id="photo-file" accept="image/jpeg,image/png,image/webp"></div>
+          <h2>01 · 上传一道题</h2><p class="muted">照片中尽量只保留一道题及完整条件。</p>
+          <p id="upload-storage-note" class="muted"></p><div class="file-actions"><label class="button primary" for="camera-file">拍照上传 ↥</label><input class="file-input" type="file" id="camera-file" accept="image/jpeg,image/png,image/webp" capture="environment"><label class="button subtle" for="photo-file">从相册／文件选择</label><input class="file-input" type="file" id="photo-file" accept="image/jpeg,image/png,image/webp"></div>
           <p class="fine-print">JPEG / PNG / WebP · 最大 8 MB · HEIC 请先转换 · PDF 后续开放</p>
           <div id="upload-preview" hidden><img id="upload-preview-image" alt="待上传的题目照片"><p id="selected-file" class="muted"></p></div>
           <div class="field-grid"><label>题目来源<input id="upload-source" maxlength="200" placeholder="例如：学校作业 · 第三章" autocomplete="off"></label><label>题目日期<input id="upload-date" type="date" required></label></div>
@@ -65,7 +70,7 @@
         </form>
         <article id="question-review" class="card review-card" hidden>
           <div class="card-top"><h2>02 · 分析与审核</h2><span class="status-pill" id="question-status"></span></div><p id="question-provenance" class="muted"></p>
-          <div class="review-grid"><div class="original-panel"><a id="original-image-link" target="_blank" rel="noopener"><img id="original-image" alt="完整保存的学校原题，点击查看原图"></a><p class="fine-print">点击照片查看完整原图</p><button type="button" class="button primary" id="analyze-question">AI 分析题目 →</button><p id="analyze-note" class="fine-print"></p></div>
+          <div class="review-grid"><div class="original-panel"><a id="original-image-link" target="_blank" rel="noopener"><img id="original-image" alt="完整保存的学校原题，点击查看原图"></a><p class="fine-print">点击照片查看完整原图</p><button type="button" class="button primary" id="analyze-question">AI 分析题目 →</button><p id="analyze-note" class="fine-print"></p><button id="repair-photo" type="button" class="button subtle" hidden>补传所选原图</button></div>
           <div id="review-fields" hidden><p id="ai-provenance" class="fine-print"></p><p class="notice amber">请对照原图核对题干、条件和解答。修改后先保存草稿，确认完整且正确后再保存审核。人工确认不等于独立验题。</p>
             <div class="field-grid"><label>来源<input id="review-source" maxlength="200"></label><label>日期<input id="review-date" type="date"></label></div>
             <label>标准题干<textarea id="review-question" rows="4"></textarea></label>
@@ -83,7 +88,7 @@
           </div></div>
         </article>
       </section>
-      <section id="view-bank" class="view" hidden><div class="page-heading"><div><p class="eyebrow">SCHOOL ORIGINALS</p><h1>我的题库</h1><p class="sub">先保存学校原题，一道一道确认。</p></div><a href="#upload" class="button primary">上传题目 →</a></div><article class="card"><h2>学校原题</h2><p id="bank-empty-note" class="muted">本机原题记录。Supabase 正式题库将在 V0.2 接入。</p><div id="question-list" class="question-list"></div></article><p class="fine-print">AI 变式、搜索筛选与自适应练习将在后续版本开放；未审核原题不会自动用于学生练习。</p></section>
+      <section id="view-bank" class="view" hidden><div class="page-heading"><div><p class="eyebrow">SCHOOL ORIGINALS</p><h1>我的题库</h1><p class="sub">先保存学校原题，一道一道确认。</p></div><a href="#upload" class="button primary">上传题目 →</a></div><article class="card"><h2>学校原题</h2><p id="bank-empty-note" class="muted">本机原题记录。Supabase 正式题库将在 V0.2 接入。</p><div class="bank-filters field-grid"><label>搜索题干／来源<input id="bank-search" type="search" placeholder="输入关键词"></label><label>审核状态<select id="bank-status"><option value="">全部状态</option><option value="uploaded">原图已保存</option><option value="needs_clarification">条件待确认</option><option value="pending_review">待人工审核</option><option value="approved">已人工确认</option></select></label><label>难度<select id="bank-difficulty"><option value="">全部难度</option><option value="basic">基础</option><option value="standard">常规</option><option value="challenge">拓展</option></select></label><label>知识点<input id="bank-knowledge" placeholder="例如：一元一次方程"></label><label>数学方法<input id="bank-method" placeholder="例如：代入检验法"></label></div><div id="question-list" class="question-list"></div></article><p class="fine-print">AI 变式与自适应练习将在后续版本开放；未审核原题不会自动用于学生练习。</p></section>
       <section id="view-future" class="view" hidden><div class="page-heading"><div><p class="eyebrow">NEXT STEP</p><h1 id="future-title"></h1><p class="sub" id="future-description"></p></div></div><article class="card future-card"><span class="empty-symbol">∑</span><h2>掌握需要独立解题的证据</h2><p>上传题目和阅读讲解不会自动提高掌握状态。答题记录、错因和 S0–S3 评估将在后续练习阶段开放。</p><a href="#upload" class="button primary">先上传一道学校原题 →</a></article></section>
       <footer>数学题库 <span>·</span> 初一数学 <span>·</span> V0.1 题目分析</footer>
     </main>
