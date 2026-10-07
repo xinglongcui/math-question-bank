@@ -22,7 +22,7 @@ export function validateAnalysis(value, {approval = false} = {}) {
   if (!['basic', 'standard', 'challenge'].includes(value.difficulty)) fail('请选择有效难度。');
   if (typeof value.needsClarification !== 'boolean') fail('缺少题目完整性判断。');
   result.difficulty = value.difficulty; result.needsClarification = value.needsClarification;
-  if (!result.question) fail('题干不能为空。');
+  if (!result.question && (approval || !result.needsClarification || !result.uncertainties.length)) fail('题干为空。请填写题干，或标记条件缺失并说明待确认内容。');
   if (approval && (!result.answer || !result.firstInsight || !result.steps.length || !result.knowledgePoints.length || !result.mathMethods.length || result.needsClarification || result.uncertainties.length))
     fail('请补全题干、答案、步骤及两套标签，并解决所有待确认条件后再保存审核。');
   return result;
@@ -93,7 +93,7 @@ export class QuestionStore {
     return this.update(id, revision, async record => {
       const {bytes, mime} = await this.image(id);
       const result = await math.analyzeQuestion({model, image:`data:${mime};base64,${bytes.toString('base64')}`});
-      return {...record, aiAnalysis:result.analysis, analysis:result.analysis, model:result.model,
+      return {...record, aiAnalysis:result.rawAnalysis ?? result.analysis, analysis:result.analysis, model:result.model,
         analyzedAt:new Date().toISOString(), reviewedAt:null, status:result.analysis.needsClarification || result.analysis.uncertainties.length ? 'needs_clarification' : 'pending_review'};
     });
   }

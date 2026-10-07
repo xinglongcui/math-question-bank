@@ -1,23 +1,12 @@
 import {setupQuestions} from './questions-ui.js';
-import {CloudBank} from './cloud-bank.js';
 const $ = id => document.getElementById(id);
 const local = location.hostname === '127.0.0.1';
 let state = {mode: local ? 'local' : 'hosted', connected: false, planEnabled: false, models: []};
 let pending = false;
 let questionUI;
-const cloud = new CloudBank();
-cloud.client.auth.onAuthStateChange((event,session)=>{
-  if(!['SIGNED_IN','SIGNED_OUT'].includes(event))return;
-  setTimeout(()=>{
-    const user=session?.user ?? null;
-    if(cloud.user?.id===user?.id)return;
-    cloud.user=user;cloud.ready=false;cloud.enabled=false;
-    questionUI?.reset();render();
-  },0);
-});
 const titles = {home: '学习首页', settings: '设置', upload: '上传题目', bank: '我的题库', progress: '学习进度'};
 const descriptions = {progress: '学校教学进度与学生 S0–S3 掌握状态分别记录。V0.4 开放。'};
-const stageLabels = {authorization:'授权', callback:'回调', token_exchange:'令牌交换', identity:'身份校验', permission:'计划权限', refresh:'授权续期', model_catalog:'模型目录', inference:'模型调用', connection:'网络连接', request:'请求校验'};
+const stageLabels = {authorization:'授权', callback:'回调', token_exchange:'令牌交换', identity:'身份校验', permission:'计划权限', refresh:'授权续期', model_catalog:'模型目录', inference:'模型调用', connection:'网络连接', request:'请求校验', question:'题目校验', analysis:'AI 分析'};
 
 function route() {
   const candidate = location.hash.slice(1), page = titles[candidate] ? candidate : 'home';
@@ -54,10 +43,10 @@ function render() {
   $('hosted-notice').hidden = !hosted;
   $('local-browser-notice').hidden = hosted;
   $('local-address').textContent = `${location.origin}/#settings`;
-  $('connection-status').textContent = hosted ? '等待云端接入' : !state.connected ? '未连接' : !state.planEnabled ? '未授权用量' : state.verifiedAt ? '调用已验证' : '已授权 · 待验证';
+  $('connection-status').textContent = hosted ? '本机版预览' : !state.connected ? '未连接' : !state.planEnabled ? '未授权用量' : state.verifiedAt ? '调用已验证' : '已授权 · 待验证';
   $('connection-status').classList.toggle('success', ready);
-  $('connection-description').textContent = hosted ? '请先完成本机订阅验证，并申请远程托管接入。' : !state.connected ? '在官方页面登录，并授权使用你的 ChatGPT 计划。' : !state.planEnabled ? '身份已确认，但没有订阅使用权限。请重新注册并授权计划使用。' : state.verifiedAt ? '已完成一次真实模型调用。可以继续推进一道题的完整流程。' : '订阅使用权限已确认。选择模型并测试一次真实调用。';
-  $('side-status').textContent = hosted ? '云端接入待申请' : state.verifiedAt ? 'ChatGPT 调用已验证' : state.connected ? 'ChatGPT 已登录' : 'ChatGPT 尚未连接';
+  $('connection-description').textContent = hosted ? '当前仅使用 Windows 本机题库。请打开本机地址进行 AI 分析。' : !state.connected ? '在官方页面登录，并授权使用你的 ChatGPT 计划。' : !state.planEnabled ? '身份已确认，但没有订阅使用权限。请重新注册并授权计划使用。' : state.verifiedAt ? '已完成一次真实模型调用。可以继续推进一道题的完整流程。' : '订阅使用权限已确认。选择模型并测试一次真实调用。';
+  $('side-status').textContent = hosted ? '本机版页面预览' : state.verifiedAt ? 'ChatGPT 调用已验证' : state.connected ? 'ChatGPT 已登录' : 'ChatGPT 尚未连接';
   $('account-email').textContent = state.email ?? '尚未连接';
   $('connect').disabled = hosted || pending;
   $('connect').hidden = state.connected;
@@ -76,18 +65,10 @@ function render() {
   $('step-model').classList.toggle('done', Boolean(picker.value));
   $('step-test').classList.toggle('done', Boolean(state.verifiedAt));
   $('last-verified').textContent = state.verifiedAt ? `上次成功验证：${new Date(state.verifiedAt).toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'})}（北京时间）` : '尚未完成真实模型调用测试。';
-  $('runtime-note').textContent = hosted ? '运行环境：云端静态 PWA。订阅接入等待许可；当前不会调用 AI。' : '运行环境：Windows 本机授权验证。此阶段需保持本机服务运行。iPad 独立运行将在云端接入完成后验证。';
+  $('runtime-note').textContent = hosted ? '此地址只提供页面预览。请在 Windows 本机打开 http://127.0.0.1:8010 使用题库。' : '运行环境：Windows 本机题库。无需家庭邮箱登录；照片和记录保存在本机，云端同步已暂停。';
   $('home-action').href = state.verifiedAt ? '#upload' : '#settings';
   $('home-action').textContent = state.verifiedAt ? '上传第一道题 →' : '连接 ChatGPT →';
   questionUI?.render();
-  renderCloud();
-}
-function renderCloud() {
-  $('cloud-status').textContent = !cloud.user ? '未登录家庭账号' : cloud.ready ? '数据库连接已确认' : '已登录 · 待检查连接';
-  $('cloud-login-form').hidden=Boolean(cloud.user);$('cloud-connected').hidden=!cloud.user;
-  $('cloud-user').textContent=cloud.user?.email?.replace(/^(.{1,2}).*(@.*)$/,'$1***$2') ?? '';
-  $('cloud-enable').disabled=pending || !cloud.ready;$('cloud-enable').checked=cloud.enabled;
-  for(const id of ['cloud-send','cloud-verify','cloud-check','cloud-signout'])$(id).disabled=pending;
 }
 async function refresh() {
   if (!local) { render(); return; }
@@ -138,31 +119,14 @@ $('disconnect').addEventListener('click', () => act(async () => {
   const value = await request('/api/disconnect'); $('test-result').hidden = true; await refresh(); message(value.message);
 }));
 window.addEventListener('hashchange', route);
-$('cloud-login-form').addEventListener('submit',event=>{event.preventDefault();act(async()=>{await cloud.sendLogin($('cloud-email').value.trim());message('登录邮件已发送。请在同一个浏览器打开邮件链接，或输入邮件提供的验证码。');});});
-$('cloud-verify').addEventListener('click',()=>act(async()=>{
-  await cloud.verify($('cloud-email').value.trim(),$('cloud-code').value.trim());$('cloud-code').value='';
-  message('家庭账号已登录。请检查题库连接。');
-}));
-$('cloud-check').addEventListener('click',()=>act(async()=>{await cloud.check();message('数据库表可访问。启用云端保存前，还需完成两账户及私有图片权限验收。');}));
-$('cloud-enable').addEventListener('change',()=>{
-  cloud.enabled=$('cloud-enable').checked && cloud.ready;
-  if(cloud.enabled)sessionStorage.setItem('mathbank-cloud-user',cloud.user.id);else sessionStorage.removeItem('mathbank-cloud-user');
-  questionUI.reset();questionUI.enter(location.hash.slice(1) || 'home').catch(showError);render();
-  message(cloud.enabled?'之后新题将保存到云端私有题库。本机旧题不会自动上传。':'已切回本机记录；云端题目仍保存在 Supabase。');
-});
-$('cloud-signout').addEventListener('click',()=>act(async()=>{await cloud.signOut();sessionStorage.removeItem('mathbank-cloud-user');questionUI.reset();await questionUI.enter(location.hash.slice(1) || 'home');message('已退出家庭题库账号。');}));
 window.addEventListener('online', () => refresh().catch(showError));
 window.addEventListener('pageshow', event => { if (event.persisted) refresh().catch(showError); });
 document.addEventListener('visibilitychange', () => { if (!document.hidden && !pending) refresh().catch(showError); });
 $('today').textContent = new Intl.DateTimeFormat('zh-CN', {timeZone:'Asia/Shanghai', month:'long', day:'numeric', weekday:'long'}).format(new Date());
 route(); render();
-questionUI = setupQuestions({request, act, message, showError, cloud, getState:()=>({...state,pending})});
+questionUI = setupQuestions({request, act, message, showError, getState:()=>({...state,pending})});
 try {
   await refresh();
-  await questionUI.enter(location.hash.slice(1) || 'home');
-  await cloud.initialize();
-  if(cloud.user && sessionStorage.getItem('mathbank-cloud-user')===cloud.user.id){await cloud.check();cloud.enabled=true;}
-  render();
   await questionUI.enter(location.hash.slice(1) || 'home');
   if (local) {
     const result = await (await fetch('/api/login-result', {cache:'no-store'})).json();

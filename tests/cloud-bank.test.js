@@ -1,6 +1,6 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import {CloudBank} from '../public/cloud-bank.js';
+import {CloudBank} from '../future/supabase/cloud-bank.js';
 
 test('cloud readiness requires verified Supabase user, both tables and private storage access',async()=>{
   let storageChecked=false;const bank=new CloudBank({auth:{getUser:async()=>({data:{user:{id:'verified-user'}}})},from:()=>({select:()=>({limit:async()=>({data:[]})})}),storage:{from:()=>({list:async user=>{assert.equal(user,'verified-user');storageChecked=true;return {data:[]};}})}});

@@ -2,9 +2,9 @@
 
 iPad-first 初一数学题库：ChatGPT 订阅接入已在本机实测，继续完成一道题的上传、分析和人工审核。
 
-目前实现：响应式首页/设置/上传/原题列表、PWA、Windows 官方 OAuth、账户模型目录、统一模型选择、照片保存、AI 分析、修改草稿、人工审核和分类筛选。V0.2 接入代码新增 Supabase 家庭登录、私有原图和题目记录；真实项目已建表，邮件登录与 Storage 上传仍待端到端验收。没有 OpenAI API key 入口或付费 API 回退。
+目前实现：响应式首页/设置/上传/原题列表、PWA、Windows 官方 OAuth、账户模型目录、统一模型选择、照片保存、AI 分析、修改草稿、人工审核和分类筛选。按用户最新选择，当前取消家庭邮箱登录，使用 Windows 本机题库；云端同步暂停。Supabase 历史实现保留于 future/supabase/，已建项目和数据不删除。没有 OpenAI API key 入口或付费 API 回退。
 
-**2026-10-07 已完成真实本机订阅及公开例题图片分析验证。** GPT-5.6-Sol 返回“数学题库连接成功”，收到 `response.completed`；图片例题得到答案 x = 4。这证明当前账户的本机调用链可用；Vercel 远程订阅接入尚未获批。Supabase 接入处于验收阶段，变式与自适应练习尚未实现。
+**2026-10-07 已完成真实本机订阅及公开例题图片分析验证。** GPT-5.6-Sol 返回“数学题库连接成功”，收到 `response.completed`；图片例题得到答案 x = 4。这证明当前账户的本机调用链可用；Vercel 远程订阅接入尚未获批。Supabase 接入暂停，变式与自适应练习尚未实现。
 
 ## Windows 本机验证
 
@@ -31,12 +31,11 @@ npm start
 
 ## Vercel / iPad 页面
 
-已上线：[数学题库](https://math-question-bank-nu.vercel.app/)。当前使用 Vercel Drop 上传构建目录，没有 Git 自动部署连接。构建生成 dist/vercel.json，仅保留响应头配置；后续可把整个 dist/ 再上传到既有项目。生产 URL 已登记在 Supabase 返回地址中。家庭账号登录与 Storage 上传仍在验收，云端 AI 未开放。
+已上线的 [Vercel 页面](https://math-question-bank-nu.vercel.app/) 仍是此前上传的版本，尚未同步本次取消家庭登录与空题干修复。当前请使用 Windows 本机地址。
 
+`npm run build` 生成 `dist/`，仅提供响应式页面预览，不上传、保存或分析云端照片。`vercel.json` 配置静态部署；Framework Preset 为 Other，构建命令 `npm run build`，输出目录 `dist`。无需密钥或环境变量。构建不包含 future/ 的 Supabase 客户端代码。
 
-`npm run build` 生成 `dist/`，`vercel.json` 已配置静态部署。在 Vercel 导入仓库或该分支，Framework Preset 为 Other，构建命令 `npm run build`，输出目录 `dist`。**无需密钥或环境变量**。
-
-静态 PWA 可以通过 Supabase 家庭登录保存、阅读和审核自己的云端题目；需完成登录、数据库和私有照片端到端验收。ChatGPT 设置仍显示“等待云端接入”，不会改用其他计费路线。iPad 打开实际 HTTPS 地址 → Safari 分享 → 添加到主屏幕。离线只能查看页面外壳，私有题目与照片不进入 Service Worker 缓存。浏览器尺寸检查不等于真机 Safari 验证，真机安装仍需用户验证。
+本阶段本机服务必须运行，iPad 独立使用暂缓。离线仅缓存页面外壳，私有题目和照片不进入 Service Worker 缓存。浏览器尺寸检查不等于真机 Safari 验证。
 
 官方开源动态授权目前要求 `http://127.0.0.1:<port>/auth/callback`。**本机验证通过不等于 Vercel 订阅调用获准；远程托管需申请并确认支持协议。** 截至 2026-10-07，用户尚未申请/不确定。为避免制造虚假的云端登录入口，本版本不部署 OAuth 服务到 Vercel。
 
@@ -55,7 +54,7 @@ npm run build
 
 完整需求和 V0.1–V0.5 顺序：[docs/requirements.md](docs/requirements.md)。
 
-Supabase 配置与验收：[docs/supabase-setup.md](docs/supabase-setup.md)。设置中登录家庭账号、检查连接并主动启用云端保存后，之后的新题才写入 Supabase；本机旧题不会自动迁移。Windows 页面可下载自己的云端原图，交给本机已验证的 ChatGPT 分析，再保存结果到私有题库。Vercel 不提供远程订阅调用。
+Supabase 历史配置与验收：[docs/supabase-setup.md](docs/supabase-setup.md)。此功能已暂停，当前页面没有家庭邮箱登录或云端保存入口。既有云端项目、数据库、权限策略和本机记录保留。
 
 官方参考（核对日期 2026-10-07）：
 
@@ -73,4 +72,4 @@ Supabase 配置与验收：[docs/supabase-setup.md](docs/supabase-setup.md)。�
 
 原图和题目记录分开使用 Windows DPAPI 加密，保存于 `.local/questions/`，原图不压缩、不覆盖。服务重启后可在「我的题库」重新打开记录。此阶段最多 100 道题，单一家庭/进程，本机记录未同步到 Supabase，不能当成云端备份。照片、账户令牌、题目内容不会进入 GitHub 或 Vercel 构建。
 
-AI 条件缺失、格式错误、流中断或额度不足会保留原图；不会自动标为已审核。人工确认不是独立验题，也不会提高 S0–S3 掌握状态。
+AI 返回空题干时，保存为条件待确认并保留原始 AI 回复；用户补齐题干和待确认内容后才能审核。格式错误、流中断或额度不足会保留原图；不会自动标为已审核。人工确认不是独立验题，也不会提高 S0–S3 掌握状态。

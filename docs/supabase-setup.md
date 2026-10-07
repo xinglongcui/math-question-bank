@@ -1,8 +1,10 @@
-# V0.2 接入验证：私有题库
+# V0.2 历史接入记录（已暂停）
+
+用户已选择取消家庭邮箱登录、使用 Windows 本机题库。以下为历史配置与未来恢复时的验收参考，当前页面没有这些入口。客户端实现移至 future/supabase/，不会进入网页构建。未删除既有 Supabase 项目、数据或权限策略。
 
 指定项目：https://hlxishwsrarkvjjvackd.supabase.co。2026-10-07 已完成空项目检查，执行题库迁移和事务回滚的权限测试。两张表 RLS 已启用，math-originals 桶为私有，测试账号与题目无残留。迁移已通过控制台手工执行，勿重复执行同名 CREATE TABLE；未写入 CLI migration history。
 
-## 登录和使用
+## 历史登录流程（当前不启用）
 
 1. 本机题库「设置 → 家庭题库」填写家庭邮箱，发送登录邮件。请求被接受不等于邮件送达。保留邮箱验证，不通过关闭邮箱确认解决邮件问题。
 2. Site URL 已改为 https://math-question-bank-nu.vercel.app/，允许返回地址包含该站点 /#settings，以及 http://127.0.0.1:8010/#settings。在发送邮件的同一浏览器打开链接，PKCE 依赖该浏览器的登录事务。首次邮件发送发生于修正地址之前，旧邮件可能返回 localhost:3000。

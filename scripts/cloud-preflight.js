@@ -1,4 +1,4 @@
-import {cloudConfig} from '../public/cloud-config.js';
+import {cloudConfig} from '../future/supabase/cloud-config.js';
 const headers={apikey:cloudConfig.key};
 for(const path of ['/auth/v1/settings','/rest/v1/math_questions?select=id&limit=1']) {
   const response=await fetch(cloudConfig.url+path,{headers,signal:AbortSignal.timeout(20000)});

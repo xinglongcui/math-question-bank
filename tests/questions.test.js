@@ -45,6 +45,21 @@ test('analysis or network failure retains original and revision for retry',async
   assert.equal((await store.get(record.id)).status,'uploaded');assert.equal((await store.get(record.id)).revision,1);
   assert.deepEqual((await store.image(record.id)).bytes,decodeImage(image).bytes);
 });
+
+test('an empty model question is retained as an incomplete draft with raw output and original photo',async t=>{
+  const store=await storeFor(t),record=await store.create({image,date:'2026-10-07'});
+  const raw={...analysis,question:''};
+  const math=new MathAI({invoke:async()=>({text:JSON.stringify(raw)})});
+  const saved=await store.analyze(record.id,1,math,'model');
+  assert.equal(saved.status,'needs_clarification');assert.equal(saved.analysis.question,'');
+  assert.equal(saved.analysis.needsClarification,true);assert.ok(saved.analysis.uncertainties.length);
+  assert.deepEqual(saved.aiAnalysis,raw);
+  const draft=await store.draft({...saved});assert.equal(draft.status,'needs_clarification');
+  await assert.rejects(store.review({...draft,confirmed:true}),{code:'invalid_question'});
+  assert.deepEqual((await store.image(record.id)).bytes,decodeImage(image).bytes);
+  const corrected=await store.draft({...draft,analysis});assert.equal(corrected.status,'pending_review');
+  assert.equal((await store.review({...corrected,confirmed:true})).status,'approved');
+});
 test('photo formats, path traversal and malformed AI schema are rejected',async t=>{
   const store=await storeFor(t);
   assert.throws(()=>decodeImage('data:image/jpeg;base64,aGVsbG8='),{code:'invalid_question'});
