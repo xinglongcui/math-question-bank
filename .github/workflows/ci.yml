@@ -1,4 +1,4 @@
-name: Validate V0.0
+name: Validate math question bank
 on: [push, pull_request]
 jobs:
   check:

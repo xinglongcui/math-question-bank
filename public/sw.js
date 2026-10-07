@@ -1,5 +1,5 @@
-const CACHE = 'mathbank-shell-v2';
-const SHELL = ['/', '/index.html', '/app.js', '/styles.css', '/icon.svg', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png', '/manifest.webmanifest'];
+const CACHE = 'mathbank-shell-v3';
+const SHELL = ['/', '/index.html', '/app.js', '/questions-ui.js', '/styles.css', '/icon.svg', '/icon-192.png', '/icon-512.png', '/apple-touch-icon.png', '/manifest.webmanifest'];
 self.addEventListener('install', event => event.waitUntil(caches.open(CACHE).then(cache => cache.addAll(SHELL)).then(() => self.skipWaiting())));
 self.addEventListener('activate', event => event.waitUntil(caches.keys().then(keys => Promise.all(keys.filter(key => key.startsWith('mathbank-shell-') && key !== CACHE).map(key => caches.delete(key)))).then(() => self.clients.claim())));
 self.addEventListener('fetch', event => {

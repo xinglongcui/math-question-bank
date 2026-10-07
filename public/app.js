@@ -1,7 +1,9 @@
+import {setupQuestions} from './questions-ui.js';
 const $ = id => document.getElementById(id);
 const local = location.hostname === '127.0.0.1';
 let state = {mode: local ? 'local' : 'hosted', connected: false, planEnabled: false, models: []};
 let pending = false;
+let questionUI;
 const titles = {home: '学习首页', settings: '设置', upload: '上传题目', bank: '我的题库', progress: '学习进度'};
 const descriptions = {upload: '拍照、相册和 PDF，保留每一道学校原题。V0.1 开放。', bank: '学校原题与 AI 变式分开保存，人工审核后入库。V0.2 开放。', progress: '学校教学进度与学生 S0–S3 掌握状态分别记录。V0.4 开放。'};
 const stageLabels = {authorization:'授权', callback:'回调', token_exchange:'令牌交换', identity:'身份校验', permission:'计划权限', refresh:'授权续期', model_catalog:'模型目录', inference:'模型调用', connection:'网络连接', request:'请求校验'};
@@ -14,10 +16,12 @@ function route() {
   });
   $('breadcrumb').textContent = titles[page];
   $('view-home').hidden = page !== 'home'; $('view-settings').hidden = page !== 'settings';
-  $('view-future').hidden = page === 'home' || page === 'settings';
+  $('view-upload').hidden = page !== 'upload'; $('view-bank').hidden = page !== 'bank';
+  $('view-future').hidden = page !== 'progress';
   $('future-title').textContent = titles[page]; $('future-description').textContent = descriptions[page] ?? '';
   document.title = `${titles[page]} · 数学题库`;
   window.scrollTo({top: 0});
+  questionUI?.enter(page).catch(showError);
 }
 function message(text, error = false) {
   $('message').hidden = false; $('message').className = `notice${error ? ' error' : ''}`;
@@ -61,6 +65,9 @@ function render() {
   $('step-test').classList.toggle('done', Boolean(state.verifiedAt));
   $('last-verified').textContent = state.verifiedAt ? `上次成功验证：${new Date(state.verifiedAt).toLocaleString('zh-CN', {timeZone:'Asia/Shanghai'})}（北京时间）` : '尚未完成真实模型调用测试。';
   $('runtime-note').textContent = hosted ? '运行环境：云端静态 PWA。订阅接入等待许可；当前不会调用 AI。' : '运行环境：Windows 本机授权验证。此阶段需保持本机服务运行。iPad 独立运行将在云端接入完成后验证。';
+  $('home-action').href = state.verifiedAt ? '#upload' : '#settings';
+  $('home-action').textContent = state.verifiedAt ? '上传第一道题 →' : '连接 ChatGPT →';
+  questionUI?.render();
 }
 async function refresh() {
   if (!local) { render(); return; }
@@ -116,8 +123,10 @@ window.addEventListener('pageshow', event => { if (event.persisted) refresh().ca
 document.addEventListener('visibilitychange', () => { if (!document.hidden && !pending) refresh().catch(showError); });
 $('today').textContent = new Intl.DateTimeFormat('zh-CN', {timeZone:'Asia/Shanghai', month:'long', day:'numeric', weekday:'long'}).format(new Date());
 route(); render();
+questionUI = setupQuestions({request, act, message, showError, getState:()=>({...state,pending})});
 try {
   await refresh();
+  await questionUI.enter(location.hash.slice(1) || 'home');
   if (local) {
     const result = await (await fetch('/api/login-result', {cache:'no-store'})).json();
     if (result.error) showError(result.error);

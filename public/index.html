@@ -26,7 +26,7 @@
       <a href="#progress" data-nav="progress"><span>◔</span>学习进度</a>
       <a href="#settings" data-nav="settings"><span>⚙</span>设置</a>
     </nav>
-    <div class="sidebar-foot"><span class="dot"></span><span id="side-status">连接状态待检查</span><small>V0.0 · 接入验证</small></div>
+    <div class="sidebar-foot"><span class="dot"></span><span id="side-status">连接状态待检查</span><small>V0.1 · 一道题的完整流程</small></div>
   </aside>
   <div class="workspace">
     <header class="topbar"><span>我的学习空间 <span class="separator">/</span> <strong id="breadcrumb">学习首页</strong></span><span class="edition">初一 · 数学</span></header>
@@ -35,14 +35,14 @@
       <section id="view-home" class="view">
         <div class="page-heading"><div><p class="eyebrow" id="today">每一天，都有新的发现</p><h1>每天一题，练会一种思路。</h1><p class="sub">从学校的真实题目出发，把理解变成独立解决问题的能力。</p></div><span class="outline-badge">学习空间已就绪</span></div>
         <div class="home-grid">
-          <article class="tonight card"><div class="card-top"><span class="eyebrow">TODAY’S PRACTICE</span><span class="pill">10–15 分钟</span></div><h2>今晚一题</h2><p>先连接 ChatGPT，<br>再开启你的第一道变式练习。</p><div class="math-drawing" aria-hidden="true"><span class="formula">a² − b²</span><span class="bracket">= (a + b)(a − b)</span><span class="draw-note">看见结构，找到突破口</span><i></i></div><a href="#settings" class="button primary">连接 ChatGPT <span>→</span></a><small>变式练习将在订阅接入验证完成后开放。</small></article>
+          <article class="tonight card"><div class="card-top"><span class="eyebrow">TODAY’S PRACTICE</span><span class="pill">10–15 分钟</span></div><h2>今晚一题</h2><p>先分析一道学校原题，<br>变式练习将在后续阶段开放。</p><div class="math-drawing" aria-hidden="true"><span class="formula">a² − b²</span><span class="bracket">= (a + b)(a − b)</span><span class="draw-note">看见结构，找到突破口</span><i></i></div><a id="home-action" href="#settings" class="button primary">连接 ChatGPT <span>→</span></a><small>当前可以上传、分析并人工确认学校原题。</small></article>
           <article class="card journey"><div class="card-top"><h2>从理解，到掌握</h2><span class="muted">S0 → S3</span></div><p class="muted">解对一道题，是开始。遇到新的变式也能独立解决，才是掌握。</p><ol class="mastery"><li><span>S0</span><div><strong>还不会</strong><small>找到卡住的第一步</small></div></li><li><span>S1</span><div><strong>讲解后理解</strong><small>能解释为什么这样做</small></div></li><li><span>S2</span><div><strong>独立完成同类题</strong><small>不依赖提示完成解答</small></div></li><li><span>S3</span><div><strong>独立解决新变式</strong><small>真正掌握数学结构</small></div></li></ol><div class="journey-note">知识点和数学方法，将分别记录。</div></article>
         </div>
-        <div class="stat-grid"><article class="card stat"><span>学校原题</span><strong>0 <small>道</small></strong><p>学校教什么，从真实题目中了解</p></article><article class="card stat"><span>已验证的变式</span><strong>0 <small>道</small></strong><p>生成后独立验题，再进入练习</p></article><article class="card stat"><span>达到 S3 的知识点</span><strong>—</strong><p>完成首次训练后，开始记录</p></article></div>
-        <article class="card recent"><div class="card-top"><h2>最近上传</h2><span class="muted">原始照片 · 作业 · 试卷</span></div><div class="empty"><span class="empty-symbol">↥</span><strong>从一张学校作业开始</strong><p>上传、分析和人工审核将在 V0.1 开放。现在先完成 ChatGPT 接入验证。</p><a href="#settings" class="text-link">前往设置 →</a></div></article>
+        <div class="stat-grid"><article class="card stat"><span>学校原题</span><strong><span id="original-count">0</span> <small>道</small></strong><p>学校教什么，从真实题目中了解</p></article><article class="card stat"><span>已验证的变式</span><strong>0 <small>道</small></strong><p>生成后独立验题，再进入练习</p></article><article class="card stat"><span>达到 S3 的知识点</span><strong>—</strong><p>完成首次训练后，开始记录</p></article></div>
+        <article class="card recent"><div class="card-top"><h2>最近上传</h2><span class="muted">原始照片 · 作业 · 试卷</span></div><div id="recent-questions" class="question-list"></div><div id="recent-empty" class="empty"><span class="empty-symbol">↥</span><strong>从一张学校作业开始</strong><p>上传一道题，分析后对照原图核对并人工审核。</p><a href="#upload" class="text-link">上传第一道题 →</a></div></article>
       </section>
       <section id="view-settings" class="view" hidden>
-        <div class="page-heading"><div><p class="eyebrow">ACCOUNT & MODEL</p><h1>连接你的 ChatGPT</h1><p class="sub">用已有订阅，开启题目分析、变式生成和答案批改。</p></div><span class="outline-badge">V0.0</span></div>
+        <div class="page-heading"><div><p class="eyebrow">ACCOUNT & MODEL</p><h1>连接你的 ChatGPT</h1><p class="sub">用已有订阅，开启题目分析、变式生成和答案批改。</p></div><span class="outline-badge">V0.1</span></div>
         <div id="hosted-notice" class="notice amber" hidden><strong>云端订阅接入尚未开放</strong><p>当前网页可在 iPad 预览。远程使用 ChatGPT 订阅需要申请接入；本机授权验证请使用 Windows 版。</p><a href="https://openai.com/form/sign-in-with-chatgpt-interest/" target="_blank" rel="noopener noreferrer">查看官方接入申请 →</a></div>
         <div id="local-browser-notice" class="notice amber" hidden><strong>请在 Edge 或 Chrome 中完成本机授权</strong><p>复制下方题库地址到 Windows 浏览器，再点击 Continue with ChatGPT。请在同一个浏览器中发起并完成授权；不要复制已跳转的授权网址。</p><p id="local-address"></p><button class="button subtle" id="copy-address">复制题库地址</button><p>若 OpenAI 的账户选择页面提示 Invalid content type，先重新发起登录；若仍失败，检查浏览器会话与网络。这个错误本身不说明订阅权限不足。</p></div>
         <div class="settings-grid">
@@ -50,10 +50,42 @@
           <article class="card steps-card"><h2>三步完成接入验证</h2><ol class="setup-steps"><li id="step-login"><span>01</span><div><strong>登录并授权</strong><small>在官方页面允许使用 ChatGPT 计划</small></div></li><li id="step-model"><span>02</span><div><strong>选择可用模型</strong><small>从你的账户实时获取模型列表</small></div></li><li id="step-test"><span>03</span><div><strong>完成一次真实调用</strong><small>收到完整回复后，才标记验证成功</small></div></li></ol><div class="journey-note">接入验证通过，再开始一道题的完整流程。</div></article>
         </div>
         <article class="card model-card"><div class="card-top"><div><h2>当前模型</h2><p class="muted">第一阶段，所有 AI 任务统一使用这个模型。</p></div><button class="button subtle" id="refresh-models" disabled>↻ 刷新模型</button></div><label for="model">模型选择</label><select id="model" disabled><option value="">连接账号后获取可用模型</option></select><div class="test-row"><div><strong>最小连接测试</strong><p class="muted">发送一条简单请求。此操作会使用你的 ChatGPT 用量。</p></div><button class="button primary" id="test" disabled>测试连接 →</button></div><div id="test-result" class="test-result" hidden><span class="eyebrow">MODEL RESPONSE</span><p id="test-output"></p><small id="test-meta"></small></div><p id="last-verified" class="fine-print"></p></article>
-        <details class="card explanation"><summary>当前版本能做什么？</summary><p>V0.0 只验证授权、模型目录和一次完整推理；当前没有学生数据或正式题库。学校原题与 AI 变式将分开保存，知识点与数学方法分别标记。Supabase 会在题库阶段接入。</p><p id="runtime-note">正在读取运行环境。</p></details>
+        <details class="card explanation"><summary>当前版本能做什么？</summary><p>V0.1 支持本机保存学校原题照片、AI 分析、修改草稿和人工审核。知识点与数学方法分别标记，原始 AI 分析单独保留。Supabase 正式题库、变式与自适应练习后续接入。</p><p id="runtime-note">正在读取运行环境。</p></details>
       </section>
-      <section id="view-future" class="view" hidden><div class="page-heading"><div><p class="eyebrow">NEXT STEP</p><h1 id="future-title"></h1><p class="sub" id="future-description"></p></div></div><article class="card future-card"><span class="empty-symbol">∑</span><h2>先打通接入，再开始一道题</h2><p>这一阶段先验证 ChatGPT 订阅能否驱动系统。完成后，从上传一张学校题目照片开始，逐步加入题目分析、人工审核和变式练习。</p><a href="#settings" class="button primary">前往 ChatGPT 设置 →</a></article></section>
-      <footer>数学题库 <span>·</span> 初一数学 <span>·</span> V0.0 接入验证</footer>
+      <section id="view-upload" class="view" hidden>
+        <div class="page-heading"><div><p class="eyebrow">ONE QUESTION AT A TIME</p><h1>从一道学校原题开始</h1><p class="sub">保留原图，读懂题目，再确认解题思路。</p></div><span class="outline-badge">V0.1</span></div>
+        <div class="notice amber" id="upload-cloud-note" hidden>云端接入尚未开放。请在 Windows 本机题库上传和分析；这里不会上传或保存你的照片。</div>
+        <form id="upload-form" class="card upload-card">
+          <h2>01 · 上传一道题</h2><p class="muted">照片中尽量只保留一道题及完整条件。原图将完整保存在本机私有目录；点击分析后才发送给 ChatGPT。</p>
+          <div class="file-actions"><label class="button primary" for="camera-file">拍照上传 ↥</label><input class="file-input" type="file" id="camera-file" accept="image/jpeg,image/png,image/webp" capture="environment"><label class="button subtle" for="photo-file">从相册／文件选择</label><input class="file-input" type="file" id="photo-file" accept="image/jpeg,image/png,image/webp"></div>
+          <p class="fine-print">JPEG / PNG / WebP · 最大 8 MB · HEIC 请先转换 · PDF 后续开放</p>
+          <div id="upload-preview" hidden><img id="upload-preview-image" alt="待上传的题目照片"><p id="selected-file" class="muted"></p></div>
+          <div class="field-grid"><label>题目来源<input id="upload-source" maxlength="200" placeholder="例如：学校作业 · 第三章" autocomplete="off"></label><label>题目日期<input id="upload-date" type="date" required></label></div>
+          <button type="submit" class="button primary" id="upload-save" disabled>保存原图 →</button>
+        </form>
+        <article id="question-review" class="card review-card" hidden>
+          <div class="card-top"><h2>02 · 分析与审核</h2><span class="status-pill" id="question-status"></span></div><p id="question-provenance" class="muted"></p>
+          <div class="review-grid"><div class="original-panel"><a id="original-image-link" target="_blank" rel="noopener"><img id="original-image" alt="完整保存的学校原题，点击查看原图"></a><p class="fine-print">点击照片查看完整原图</p><button type="button" class="button primary" id="analyze-question">AI 分析题目 →</button><p id="analyze-note" class="fine-print"></p></div>
+          <div id="review-fields" hidden><p id="ai-provenance" class="fine-print"></p><p class="notice amber">请对照原图核对题干、条件和解答。修改后先保存草稿，确认完整且正确后再保存审核。人工确认不等于独立验题。</p>
+            <div class="field-grid"><label>来源<input id="review-source" maxlength="200"></label><label>日期<input id="review-date" type="date"></label></div>
+            <label>标准题干<textarea id="review-question" rows="4"></textarea></label>
+            <label>主要表达式<textarea id="review-expression" rows="2"></textarea></label>
+            <label>第一突破口<textarea id="review-firstInsight" rows="2"></textarea></label>
+            <label>解题步骤 · 每行一步<textarea id="review-steps" rows="6"></textarea></label>
+            <label>答案<textarea id="review-answer" rows="2"></textarea></label>
+            <div class="field-grid"><label>知识点 · 每行一个<textarea id="review-knowledgePoints" rows="3"></textarea></label><label>数学方法 · 每行一个<textarea id="review-mathMethods" rows="3"></textarea></label></div>
+            <label>难度<select id="review-difficulty"><option value="basic">基础</option><option value="standard">常规</option><option value="challenge">拓展</option></select></label>
+            <label>易错点 · 每行一个<textarea id="review-commonMistakes" rows="3"></textarea></label>
+            <label>待确认条件 · 解决后删除对应行<textarea id="review-uncertainties" rows="3"></textarea></label>
+            <label class="check-label"><input id="review-incomplete" type="checkbox">题目仍有缺失或不确定条件</label>
+            <label class="check-label"><input id="review-confirm" type="checkbox">我已对照原图核对题干、全部条件、步骤和答案</label>
+            <div class="file-actions"><button type="button" class="button subtle" id="save-draft">保存修改草稿</button><button type="button" class="button primary" id="approve-question" disabled>确认并保存审核 ✓</button></div>
+          </div></div>
+        </article>
+      </section>
+      <section id="view-bank" class="view" hidden><div class="page-heading"><div><p class="eyebrow">SCHOOL ORIGINALS</p><h1>我的题库</h1><p class="sub">先保存学校原题，一道一道确认。</p></div><a href="#upload" class="button primary">上传题目 →</a></div><article class="card"><h2>学校原题</h2><p id="bank-empty-note" class="muted">本机原题记录。Supabase 正式题库将在 V0.2 接入。</p><div id="question-list" class="question-list"></div></article><p class="fine-print">AI 变式、搜索筛选与自适应练习将在后续版本开放；未审核原题不会自动用于学生练习。</p></section>
+      <section id="view-future" class="view" hidden><div class="page-heading"><div><p class="eyebrow">NEXT STEP</p><h1 id="future-title"></h1><p class="sub" id="future-description"></p></div></div><article class="card future-card"><span class="empty-symbol">∑</span><h2>掌握需要独立解题的证据</h2><p>上传题目和阅读讲解不会自动提高掌握状态。答题记录、错因和 S0–S3 评估将在后续练习阶段开放。</p><a href="#upload" class="button primary">先上传一道学校原题 →</a></article></section>
+      <footer>数学题库 <span>·</span> 初一数学 <span>·</span> V0.1 题目分析</footer>
     </main>
   </div>
 </body>

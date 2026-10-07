@@ -1,10 +1,10 @@
-# 数学题库 · V0.0
+# 数学题库 · V0.1
 
-iPad-first 初一数学题库的第一阶段：**先验证 ChatGPT 订阅授权和一次完整模型调用，再开始题库。**
+iPad-first 初一数学题库：ChatGPT 订阅接入已在本机实测，继续完成一道题的上传、分析和人工审核。
 
-目前实现：响应式首页/设置、PWA manifest/离线页面、Windows 官方 OAuth、账户模型目录、统一模型选择、测试连接、断开连接。没有 OpenAI API key 入口或付费 API 回退。
+目前实现：响应式首页/设置/上传/本机原题列表、PWA、Windows 官方 OAuth、账户模型目录、统一模型选择、测试连接，以及照片保存、AI 分析、修改草稿和人工审核。没有 OpenAI API key 入口或付费 API 回退。
 
-**当前没有已验证的真实订阅连接。** 自动测试使用模拟账户和响应，Windows DPAPI 使用真实系统加密。题目上传、AI 分析、Supabase 题库和自适应练习尚未实现，页面中的相关入口明确标注后续版本。
+**2026-10-07 已完成真实本机订阅验证。** 用户截图显示 GPT-5.6-Sol 返回“数学题库连接成功”，用时 3.6 秒，收到 `response.completed`。这证明当前账户的本机调用链可用；Vercel 远程订阅接入尚未获批。Supabase 正式题库、变式与自适应练习尚未实现。
 
 ## Windows 本机验证
 
@@ -46,9 +46,9 @@ npm test
 npm run build
 ```
 
-测试覆盖 state/PKCE、回调一次性及会话绑定、nonce/账户匹配、权限不足、令牌轮换、账户模型目录、流中断/流内额度错误、Host/CSRF、真实 DPAPI 加密与重启恢复。没有读取其他程序登录凭据、自动登录或真实模型调用。
+测试覆盖 state/PKCE、回调一次性及会话绑定、nonce/账户匹配、权限不足、令牌轮换、账户模型目录、流中断/流内额度错误、Host/CSRF、真实 DPAPI 加密与重启恢复。自动测试不消耗真实账户用量；真实图片验收使用明确标记的公开生成例题。没有读取其他程序登录凭据。
 
-`src/oauth.js` 处理授权；`src/provider.js` 提供 `ChatGPTProvider`，保留 `analyzeQuestion / generateVariant / verifyQuestion / gradeAnswer` 接口，当前四个数学方法明确返回未实现。借鉴 pi 的 provider/认证生命周期分离，但授权以当前官方协议为准，不使用 ChatGPT backend-api，也不读取浏览器 Cookie。
+`src/oauth.js` 处理授权；`src/provider.js` 提供 `ChatGPTProvider`，保留 `analyzeQuestion / generateVariant / verifyQuestion / gradeAnswer` 接口，`analyzeQuestion` 已实现图片分析，其余三个数学方法明确返回未实现。借鉴 pi 的 provider/认证生命周期分离，但授权以当前官方协议为准，不使用 ChatGPT backend-api，也不读取浏览器 Cookie。
 
 完整需求和 V0.1–V0.5 顺序：[docs/requirements.md](docs/requirements.md)。
 
@@ -59,3 +59,13 @@ npm run build
 - [账户模型目录与完整推理](https://developers.openai.com/siwc/token-sharing-open-source/models-and-inference)
 - [预览请求限制](https://developers.openai.com/siwc/token-sharing-open-source/preview-limitations)
 - [pi 的 provider/认证参考](https://github.com/earendil-works/pi/blob/main/packages/ai/README.md)
+
+## 上传、分析与人工审核
+
+本机页面左侧点击「上传题目」→ 拍照或选择相册 → 填来源/日期 →「保存原图」→「AI 分析题目」。分析会使用设置中已验证的统一模型及 ChatGPT 订阅用量。JPEG/PNG/WebP 最大 8 MB，HEIC 先转为兼容格式；PDF 后续开放。
+
+题干、表达式、第一突破口、步骤、答案、两套标签、难度、易错点均可修改。「保存修改草稿」保留未完成审核；解决所有待确认条件，并勾选已核对后，才能「确认并保存审核」。AI 原始分析单独保留。修改已确认记录会重新进入待审核，避免旧审核状态跟随新内容。
+
+原图和题目记录分开使用 Windows DPAPI 加密，保存于 `.local/questions/`，原图不压缩、不覆盖。服务重启后可在「我的题库」重新打开记录。此阶段最多 100 道题，单一家庭/进程，本机记录未同步到 Supabase，不能当成云端备份。照片、账户令牌、题目内容不会进入 GitHub 或 Vercel 构建。
+
+AI 条件缺失、格式错误、流中断或额度不足会保留原图；不会自动标为已审核。人工确认不是独立验题，也不会提高 S0–S3 掌握状态。
